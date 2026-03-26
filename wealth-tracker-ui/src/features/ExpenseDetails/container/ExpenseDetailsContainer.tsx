@@ -16,8 +16,13 @@ import type {
   ExpenseDetailsUpdatePayload,
   ExpenseStatus,
 } from '../types/ExpenseDetailsTypes';
+import { decodeJwtPayload } from '../../../utils/jwt';
 
-const buildDefaultFormState = (username: string) => ({
+interface JwtPayload {
+  userId?: number;
+}
+
+const buildDefaultFormState = (username: string, userId: number | null) => ({
   expenseName: '',
   expenseDate: new Date().toISOString().slice(0, 10),
   amount: '',
@@ -27,7 +32,7 @@ const buildDefaultFormState = (username: string) => ({
   referenceNumber: '',
   receiptUrl: '',
   currency: 'INR',
-  userId: '101',
+  userId: userId !== null ? String(userId) : '',
   status: 'ACTIVE' as ExpenseStatus,
   categoryId: '1',
   createdBy: username || 'web',
@@ -43,7 +48,7 @@ const ExpenseDetailsContainer = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formState, setFormState] = useState(() =>
-    buildDefaultFormState(username)
+    buildDefaultFormState(username, null)
   );
 
   const authHeader = useMemo(() => {
@@ -53,6 +58,14 @@ const ExpenseDetailsContainer = () => {
     const prefix = tokenType ? tokenType : 'Bearer';
     return { Authorization: `${prefix} ${accessToken}` };
   }, [accessToken, tokenType]);
+
+  const userId = useMemo(() => {
+    if (!accessToken) {
+      return null;
+    }
+    const payload = decodeJwtPayload<JwtPayload>(accessToken);
+    return typeof payload?.userId === 'number' ? payload.userId : null;
+  }, [accessToken]);
 
   const fetchExpenseDetails = async () => {
     setIsLoading(true);
@@ -109,7 +122,7 @@ const ExpenseDetailsContainer = () => {
   };
 
   const resetForm = () => {
-    setFormState(buildDefaultFormState(username));
+    setFormState(buildDefaultFormState(username, userId));
     setEditingId(null);
   };
 
@@ -121,12 +134,26 @@ const ExpenseDetailsContainer = () => {
     }));
   }, [username]);
 
+  useEffect(() => {
+    if (userId === null) {
+      return;
+    }
+    setFormState((prev) => ({
+      ...prev,
+      userId: String(userId),
+    }));
+  }, [userId]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
+      if (userId === null) {
+        setErrorMessage('Unable to read userId from access token.');
+        return;
+      }
       if (editingId !== null) {
         const payload: ExpenseDetailsUpdatePayload = {
           amount: Number(formState.amount),
@@ -150,7 +177,7 @@ const ExpenseDetailsContainer = () => {
           referenceNumber: formState.referenceNumber.trim(),
           receiptUrl: formState.receiptUrl.trim(),
           currency: formState.currency.trim(),
-          userId: Number(formState.userId),
+          userId,
           status: formState.status,
           categoryId: Number(formState.categoryId),
           createdBy: username || 'web',
@@ -184,7 +211,7 @@ const ExpenseDetailsContainer = () => {
       referenceNumber: detail.referenceNumber,
       receiptUrl: detail.receiptUrl,
       currency: detail.currency,
-      userId: String(detail.userId),
+      userId: userId !== null ? String(userId) : String(detail.userId),
       status: detail.status,
       categoryId: String(detail.categoryId),
       createdBy: username || detail.createdBy,

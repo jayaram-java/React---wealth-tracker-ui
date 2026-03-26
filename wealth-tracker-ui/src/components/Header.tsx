@@ -1,11 +1,26 @@
 import { NavLink } from 'react-router-dom';
 import './Header.css';
+import { useAuth } from '../features/login/context/AuthProvider';
+import { decodeJwtPayload } from '../utils/jwt';
 
 interface HeaderProps {
   onLogout?: () => void;
 }
 
 const Header = ({ onLogout }: HeaderProps) => {
+  const { accessToken } = useAuth();
+
+  const payload = accessToken
+    ? decodeJwtPayload<{ roles?: string[] }>(accessToken)
+    : null;
+  const roles = payload?.roles ?? [];
+  const isAdmin = roles.includes('ROLE_ADMIN');
+  const isUser = roles.includes('ROLE_USER');
+
+  const showDashboard = isAdmin || isUser || roles.length === 0;
+  const showExpenseDetails = isAdmin || isUser;
+  const showExpenseCategories = isAdmin;
+
   return (
     <header className="app-header">
       <div className="app-header__brand">
@@ -13,30 +28,36 @@ const Header = ({ onLogout }: HeaderProps) => {
         <h2>Personal Finance Hub</h2>
       </div>
       <nav className="app-header__nav">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) =>
-            `app-header__link${isActive ? ' active' : ''}`
-          }
-        >
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/expense-categories"
-          className={({ isActive }) =>
-            `app-header__link${isActive ? ' active' : ''}`
-          }
-        >
-          Expense Categories
-        </NavLink>
-        <NavLink
-          to="/expense-details"
-          className={({ isActive }) =>
-            `app-header__link${isActive ? ' active' : ''}`
-          }
-        >
-          Expense Details
-        </NavLink>
+        {showDashboard ? (
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Dashboard
+          </NavLink>
+        ) : null}
+        {showExpenseCategories ? (
+          <NavLink
+            to="/expense-categories"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Expense Categories
+          </NavLink>
+        ) : null}
+        {showExpenseDetails ? (
+          <NavLink
+            to="/expense-details"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Expense Details
+          </NavLink>
+        ) : null}
       </nav>
       {onLogout ? (
         <button className="ghost-button" onClick={onLogout}>

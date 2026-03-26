@@ -89,7 +89,7 @@ const ExpenseCategoryPresenter = ({
                 value={formState.userId}
                 onChange={(event) => onChange('userId', event.target.value)}
                 required
-                disabled={isEditing}
+                disabled
               />
             </label>
             <label>

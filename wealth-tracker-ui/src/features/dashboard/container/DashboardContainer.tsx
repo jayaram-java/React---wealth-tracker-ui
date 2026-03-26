@@ -5,25 +5,11 @@ import { useAuth } from '../../login/context/AuthProvider';
 import { getRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';
+import { decodeJwtPayload } from '../../../utils/jwt';
 
 interface JwtPayload {
   userId?: number;
 }
-
-const decodeJwtPayload = <T,>(token: string): T | null => {
-  try {
-    const parts = token.split('.');
-    if (parts.length < 2) {
-      return null;
-    }
-    const normalized = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-    const decoded = atob(padded);
-    return JSON.parse(decoded) as T;
-  } catch {
-    return null;
-  }
-};
 
 const toIsoDate = (date: Date) => date.toISOString().slice(0, 10);
 

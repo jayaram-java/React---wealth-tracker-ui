@@ -10,11 +10,16 @@ import type {
   ExpenseCategoryUpdatePayload,
 } from '../types/ExpenseCategoryTypes';
 import { useAuth } from '../../login/context/AuthProvider';
+import { decodeJwtPayload } from '../../../utils/jwt';
 
-const buildDefaultFormState = (username: string) => ({
+interface JwtPayload {
+  userId?: number;
+}
+
+const buildDefaultFormState = (username: string, userId: number | null) => ({
   name: '',
   description: '',
-  userId: '101',
+  userId: userId !== null ? String(userId) : '',
   permissionId: '2001',
   status: 'ACTIVE' as ExpenseCategoryStatus,
   createdBy: username || 'web',
@@ -29,7 +34,7 @@ const ExpenseCategoryContainer = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formState, setFormState] = useState(() =>
-    buildDefaultFormState(username)
+    buildDefaultFormState(username, null)
   );
 
   const authHeader = useMemo(() => {
@@ -39,6 +44,14 @@ const ExpenseCategoryContainer = () => {
     const prefix = tokenType ? tokenType : 'Bearer';
     return { Authorization: `${prefix} ${accessToken}` };
   }, [accessToken, tokenType]);
+
+  const userId = useMemo(() => {
+    if (!accessToken) {
+      return null;
+    }
+    const payload = decodeJwtPayload<JwtPayload>(accessToken);
+    return typeof payload?.userId === 'number' ? payload.userId : null;
+  }, [accessToken]);
 
   const fetchCategories = async () => {
     setIsLoading(true);
@@ -71,7 +84,7 @@ const ExpenseCategoryContainer = () => {
   };
 
   const resetForm = () => {
-    setFormState(buildDefaultFormState(username));
+    setFormState(buildDefaultFormState(username, userId));
     setEditingId(null);
   };
 
@@ -83,12 +96,26 @@ const ExpenseCategoryContainer = () => {
     }));
   }, [username]);
 
+  useEffect(() => {
+    if (userId === null) {
+      return;
+    }
+    setFormState((prev) => ({
+      ...prev,
+      userId: String(userId),
+    }));
+  }, [userId]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
+      if (userId === null) {
+        setErrorMessage('Unable to read userId from access token.');
+        return;
+      }
       if (editingId !== null) {
         const payload: ExpenseCategoryUpdatePayload = {
           name: formState.name.trim(),
@@ -105,7 +132,7 @@ const ExpenseCategoryContainer = () => {
         const payload: ExpenseCategoryCreatePayload = {
           name: formState.name.trim(),
           description: formState.description.trim(),
-          userId: Number(formState.userId),
+          userId,
           permissionId: Number(formState.permissionId),
           status: formState.status,
           createdBy: username || 'web',
@@ -132,7 +159,7 @@ const ExpenseCategoryContainer = () => {
     setFormState({
       name: category.name,
       description: category.description,
-      userId: String(category.userId),
+      userId: userId !== null ? String(userId) : String(category.userId),
       permissionId: String(category.permissionId),
       status: category.status,
       createdBy: username || category.createdBy,
