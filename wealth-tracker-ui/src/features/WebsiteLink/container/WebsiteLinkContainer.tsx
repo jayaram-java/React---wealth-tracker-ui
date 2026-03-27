@@ -34,6 +34,9 @@ const WebsiteLinkContainer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [filterCategoryId, setFilterCategoryId] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
   const [formState, setFormState] = useState(() =>
     buildDefaultFormState(username)
   );
@@ -103,6 +106,29 @@ const WebsiteLinkContainer = () => {
       modifiedBy: username || '',
     }));
   }, [username]);
+
+  const filteredLinks = useMemo(() => {
+    if (filterCategoryId === 'all') {
+      return links;
+    }
+    const categoryId = Number(filterCategoryId);
+    if (Number.isNaN(categoryId)) {
+      return links;
+    }
+    return links.filter((link) => link.categoryId === categoryId);
+  }, [filterCategoryId, links]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredLinks.length / pageSize));
+  const pagedLinks = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredLinks.slice(startIndex, startIndex + pageSize);
+  }, [currentPage, filteredLinks, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleChange = (
     field: keyof typeof formState,
@@ -225,6 +251,16 @@ const WebsiteLinkContainer = () => {
     resetForm();
   };
 
+  const handleFilterChange = (value: string) => {
+    setFilterCategoryId(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    const nextPage = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(nextPage);
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -237,17 +273,22 @@ const WebsiteLinkContainer = () => {
 
   return (
     <WebsiteLinkPresenter
-      links={links}
+      links={pagedLinks}
       categories={categories}
       isLoading={isLoading}
       errorMessage={errorMessage}
       formState={formState}
       isEditing={editingId !== null}
+      filterCategoryId={filterCategoryId}
+      currentPage={currentPage}
+      totalPages={totalPages}
       onChange={handleChange}
       onSubmit={handleSubmit}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
+      onFilterChange={handleFilterChange}
+      onPageChange={handlePageChange}
       onRefresh={handleRefresh}
       onLogout={handleLogout}
     />

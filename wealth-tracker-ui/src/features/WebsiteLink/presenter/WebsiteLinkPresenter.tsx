@@ -19,6 +19,9 @@ interface WebsiteLinkPresenterProps {
     modifiedBy: string;
   };
   isEditing: boolean;
+  filterCategoryId: string;
+  currentPage: number;
+  totalPages: number;
   onChange: (
     field: keyof WebsiteLinkPresenterProps['formState'],
     value: string
@@ -27,6 +30,8 @@ interface WebsiteLinkPresenterProps {
   onEdit: (link: WebsiteLink) => void;
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
+  onFilterChange: (value: string) => void;
+  onPageChange: (page: number) => void;
   onRefresh: () => void;
   onLogout: () => void;
 }
@@ -38,11 +43,16 @@ const WebsiteLinkPresenter = ({
   errorMessage,
   formState,
   isEditing,
+  filterCategoryId,
+  currentPage,
+  totalPages,
   onChange,
   onSubmit,
   onEdit,
   onDelete,
   onCancelEdit,
+  onFilterChange,
+  onPageChange,
   onRefresh,
   onLogout,
 }: WebsiteLinkPresenterProps) => {
@@ -172,7 +182,23 @@ const WebsiteLinkPresenter = ({
               <h2>Saved Links</h2>
               <p>Manage website links and their categories.</p>
             </div>
-            {isLoading ? <span>Loading...</span> : null}
+            <div className="website-link__table-controls">
+              <label className="website-link__filter">
+                Category
+                <select
+                  value={filterCategoryId}
+                  onChange={(event) => onFilterChange(event.target.value)}
+                >
+                  <option value="all">All</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {isLoading ? <span>Loading...</span> : null}
+            </div>
           </div>
           <div className="website-link__table">
             <div className="website-link__row website-link__row--head">
@@ -219,6 +245,27 @@ const WebsiteLinkPresenter = ({
                 </div>
               ))
             )}
+          </div>
+          <div className="website-link__pagination">
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </button>
           </div>
         </div>
       </section>
