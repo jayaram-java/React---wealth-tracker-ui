@@ -15,5 +15,14 @@ export const API_ENDPOINTS = {
     detailById: (id: number) =>
       `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-details/${id}`,
     summary: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/summary`,
+    trends: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/trends`,
+  },
+  website: {
+    categories: `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-categories`,
+    categoryById: (id: number) =>
+      `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-categories/${id}`,
+    links: `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-links`,
+    linkById: (id: number) =>
+      `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-links/${id}`,
   },
 };

@@ -5,6 +5,8 @@ import DashboardContainer from './features/dashboard/container/DashboardContaine
 import { AuthProvider, useAuth } from './features/login/context/AuthProvider';
 import ExpenseCategoryContainer from './features/ExpenseCategory/container/ExpenseCategoryContainer';
 import ExpenseDetailsContainer from './features/ExpenseDetails/container/ExpenseDetailsContainer';
+import WebsiteCategoryContainer from './features/WebsiteCategory/container/WebsiteCategoryContainer';
+import WebsiteLinkContainer from './features/WebsiteLink/container/WebsiteLinkContainer';
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
@@ -40,6 +42,22 @@ const AppRoutes = () => (
       element={
         <RequireAuth>
           <ExpenseDetailsContainer />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/website-categories"
+      element={
+        <RequireAuth>
+          <WebsiteCategoryContainer />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/website-links"
+      element={
+        <RequireAuth>
+          <WebsiteLinkContainer />
         </RequireAuth>
       }
     />

@@ -1,6 +1,7 @@
 ﻿import Header from '../../../components/Header';
 import '../styles/dashboard.css';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';
+import type { ExpenseReportTrends } from '../types/ExpenseTrendTypes';
 import ExpenseChart from '../view/ExpenseChart';
 
 interface DashboardPresenterProps {
@@ -10,6 +11,7 @@ interface DashboardPresenterProps {
   monthSummary: ExpenseReportSummary | null;
   todaySummary: ExpenseReportSummary | null;
   overallSummary: ExpenseReportSummary | null;
+  trends: ExpenseReportTrends | null;
 }
 
 const DashboardPresenter = ({
@@ -19,6 +21,7 @@ const DashboardPresenter = ({
   monthSummary,
   todaySummary,
   overallSummary,
+  trends,
 }: DashboardPresenterProps) => {
   const formatCurrency = (value?: number, currency?: string) => {
     if (typeof value !== 'number') {
@@ -43,7 +46,10 @@ const DashboardPresenter = ({
   };
 
   const currency =
-    monthSummary?.currency || todaySummary?.currency || overallSummary?.currency;
+    trends?.currency ||
+    monthSummary?.currency ||
+    todaySummary?.currency ||
+    overallSummary?.currency;
   const categories = overallSummary?.categorySummaries ?? [];
   const topCategory = categories.reduce<ExpenseReportSummary['categorySummaries'][number] | null>(
     (best, current) =>
@@ -51,64 +57,45 @@ const DashboardPresenter = ({
     null
   );
 
-  const buildDailyTrend = (totalAmount?: number, todayAmount?: number) => {
-    const weeklyTotal = typeof totalAmount === 'number' ? totalAmount / 4 : 0;
-    const finalToday = typeof todayAmount === 'number' ? todayAmount : 0;
-    const targetTotal = Math.max(weeklyTotal, finalToday);
-    const weights = [0.12, 0.09, 0.15, 0.13, 0.1, 0.17, 0.24];
-    const otherWeightsSum = weights.slice(0, 6).reduce((sum, w) => sum + w, 0);
-    const remainder = Math.max(targetTotal - finalToday, 0);
-
-    const values = weights.map((weight, index) => {
-      if (targetTotal === 0) {
-        return 0;
-      }
-      if (index === weights.length - 1) {
-        return finalToday || targetTotal * weight;
-      }
-      return remainder * (weight / otherWeightsSum);
-    });
-
-    const today = new Date();
-    return values.map((value, index) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - (values.length - 1 - index));
-      const label = date.toLocaleDateString('en-US', { weekday: 'short' });
-      return {
-        label,
-        value,
-        displayValue: formatCurrency(value, currency),
-      };
-    });
+  const formatRange = (
+    start?: string,
+    end?: string,
+    options?: Intl.DateTimeFormatOptions
+  ) => {
+    if (!start || !end) {
+      return null;
+    }
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return `${formatter.format(startDate)} - ${formatter.format(endDate)}`;
   };
 
-  const buildMonthlyTrend = (monthAmount?: number, overallAmount?: number) => {
-    const base =
-      typeof monthAmount === 'number'
-        ? monthAmount
-        : typeof overallAmount === 'number'
-        ? overallAmount / 6
-        : 0;
-    const weights = [0.92, 1.08, 0.97, 1.12, 0.88, 1.0];
-    const currentMonthValue = typeof monthAmount === 'number' ? monthAmount : base;
-    const values = weights.map((weight, index) =>
-      index === weights.length - 1 ? currentMonthValue : base * weight
-    );
+  const dailyTrend =
+    trends?.dailySpends?.map((item) => ({
+      label: item.dayLabel,
+      value: item.amount,
+      displayValue: formatCurrency(item.amount, currency),
+    })) ?? [];
 
-    const current = new Date();
-    return values.map((value, index) => {
-      const date = new Date(current.getFullYear(), current.getMonth() - (5 - index), 1);
-      const label = date.toLocaleDateString('en-US', { month: 'short' });
-      return {
-        label,
-        value,
-        displayValue: formatCurrency(value, currency),
-      };
-    });
-  };
+  const monthlyTrend =
+    trends?.monthlySpends?.map((item) => ({
+      label: item.monthLabel,
+      value: item.amount,
+      displayValue: formatCurrency(item.amount, currency),
+    })) ?? [];
 
-  const dailyTrend = buildDailyTrend(monthSummary?.totalAmount, todaySummary?.totalAmount);
-  const monthlyTrend = buildMonthlyTrend(monthSummary?.totalAmount, overallSummary?.totalAmount);
+  const dailyRangeLabel =
+    formatRange(trends?.dailyStartDate, trends?.dailyEndDate, {
+      month: 'short',
+      day: 'numeric',
+    }) ?? 'Last 7 days';
+
+  const monthlyRangeLabel =
+    formatRange(trends?.monthlyStartDate, trends?.monthlyEndDate, {
+      month: 'short',
+      year: 'numeric',
+    }) ?? 'Last 6 months';
 
   return (
     <div className="dashboard">
@@ -177,12 +164,13 @@ const DashboardPresenter = ({
         <div className="dashboard__charts">
           <ExpenseChart
             title="Daily spend"
-            subtitle="Last 7 days"
+            subtitle={dailyRangeLabel}
             tone="ocean"
             type="line"
             data={dailyTrend}
             totalDisplay={formatCurrency(
-              dailyTrend.reduce((sum, item) => sum + item.value, 0),
+              trends?.dailyTotalAmount ??
+                dailyTrend.reduce((sum, item) => sum + item.value, 0),
               currency
             )}
             peakDisplay={formatCurrency(
@@ -206,12 +194,13 @@ const DashboardPresenter = ({
           />
           <ExpenseChart
             title="Monthly spend"
-            subtitle="Last 6 months"
+            subtitle={monthlyRangeLabel}
             tone="sunset"
             type="bar"
             data={monthlyTrend}
             totalDisplay={formatCurrency(
-              monthlyTrend.reduce((sum, item) => sum + item.value, 0),
+              trends?.monthlyTotalAmount ??
+                monthlyTrend.reduce((sum, item) => sum + item.value, 0),
               currency
             )}
             peakDisplay={formatCurrency(

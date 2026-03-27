@@ -20,6 +20,8 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showDashboard = isAdmin || isUser || roles.length === 0;
   const showExpenseDetails = isAdmin || isUser;
   const showExpenseCategories = isAdmin;
+  const showWebsiteCategories = isAdmin;
+  const showWebsiteLinks = isAdmin;
 
   return (
     <header className="app-header">
@@ -56,6 +58,26 @@ const Header = ({ onLogout }: HeaderProps) => {
             }
           >
             Expense Details
+          </NavLink>
+        ) : null}
+        {showWebsiteCategories ? (
+          <NavLink
+            to="/website-categories"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Website Categories
+          </NavLink>
+        ) : null}
+        {showWebsiteLinks ? (
+          <NavLink
+            to="/website-links"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Website Links
           </NavLink>
         ) : null}
       </nav>

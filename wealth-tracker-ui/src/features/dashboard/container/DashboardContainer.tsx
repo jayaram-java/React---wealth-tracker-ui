@@ -5,6 +5,7 @@ import { useAuth } from '../../login/context/AuthProvider';
 import { getRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';
+import type { ExpenseReportTrends } from '../types/ExpenseTrendTypes';
 import { decodeJwtPayload } from '../../../utils/jwt';
 
 interface JwtPayload {
@@ -24,7 +25,9 @@ const DashboardContainer = () => {
   );
   const [overallSummary, setOverallSummary] =
     useState<ExpenseReportSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [trends, setTrends] = useState<ExpenseReportTrends | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [isTrendsLoading, setIsTrendsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const authHeader = useMemo(() => {
@@ -57,12 +60,20 @@ const DashboardContainer = () => {
     return url.toString();
   };
 
+  const buildTrendsUrl = () => {
+    const url = new URL(API_ENDPOINTS.expense.trends);
+    if (userId !== null) {
+      url.searchParams.set('userId', String(userId));
+    }
+    return url.toString();
+  };
+
   const fetchSummaries = useCallback(async () => {
     if (userId === null) {
       setErrorMessage('Unable to read userId from access token.');
       return;
     }
-    setIsLoading(true);
+    setIsSummaryLoading(true);
     setErrorMessage(null);
     try {
       const today = new Date();
@@ -93,7 +104,26 @@ const DashboardContainer = () => {
         error instanceof Error ? error.message : 'Unable to load summary data.';
       setErrorMessage(message);
     } finally {
-      setIsLoading(false);
+      setIsSummaryLoading(false);
+    }
+  }, [authHeader, userId]);
+
+  const fetchTrends = useCallback(async () => {
+    if (userId === null) {
+      return;
+    }
+    setIsTrendsLoading(true);
+    try {
+      const trendData = await getRequest<ExpenseReportTrends>(buildTrendsUrl(), {
+        headers: authHeader,
+      });
+      setTrends(trendData);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to load trend data.';
+      setErrorMessage(message);
+    } finally {
+      setIsTrendsLoading(false);
     }
   }, [authHeader, userId]);
 
@@ -103,7 +133,10 @@ const DashboardContainer = () => {
       return;
     }
     fetchSummaries();
-  }, [accessToken, fetchSummaries, navigate]);
+    fetchTrends();
+  }, [accessToken, fetchSummaries, fetchTrends, navigate]);
+
+  const isLoading = isSummaryLoading || isTrendsLoading;
 
   const handleLogout = () => {
     logout();
@@ -118,6 +151,7 @@ const DashboardContainer = () => {
       monthSummary={monthSummary}
       todaySummary={todaySummary}
       overallSummary={overallSummary}
+      trends={trends}
     />
   );
 };
