@@ -36,7 +36,7 @@ const WebsiteLinkContainer = () => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
   const [formState, setFormState] = useState(() =>
     buildDefaultFormState(username)
   );

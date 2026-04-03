@@ -47,6 +47,8 @@ const ExpenseDetailsContainer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [formState, setFormState] = useState(() =>
     buildDefaultFormState(username, null)
   );
@@ -260,6 +262,23 @@ const ExpenseDetailsContainer = () => {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(expenseDetails.length / pageSize));
+  const pagedExpenses = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return expenseDetails.slice(startIndex, startIndex + pageSize);
+  }, [currentPage, expenseDetails, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    const nextPage = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(nextPage);
+  };
+
   const handleCancelEdit = () => {
     resetForm();
   };
@@ -276,17 +295,20 @@ const ExpenseDetailsContainer = () => {
 
   return (
     <ExpenseDetailsPresenter
-      expenseDetails={expenseDetails}
+      expenseDetails={pagedExpenses}
       categories={categories}
       isLoading={isLoading}
       errorMessage={errorMessage}
       formState={formState}
       isEditing={editingId !== null}
+      currentPage={currentPage}
+      totalPages={totalPages}
       onChange={handleChange}
       onSubmit={handleSubmit}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
+      onPageChange={handlePageChange}
       onRefresh={handleRefresh}
       onLogout={handleLogout}
     />

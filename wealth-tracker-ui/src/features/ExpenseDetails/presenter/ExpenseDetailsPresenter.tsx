@@ -26,11 +26,14 @@ interface ExpenseDetailsPresenterProps {
     modifiedBy: string;
   };
   isEditing: boolean;
+  currentPage: number;
+  totalPages: number;
   onChange: (field: string, value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onEdit: (detail: ExpenseDetails) => void;
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
+  onPageChange: (page: number) => void;
   onRefresh: () => void;
   onLogout: () => void;
 }
@@ -42,11 +45,14 @@ const ExpenseDetailsPresenter = ({
   errorMessage,
   formState,
   isEditing,
+  currentPage,
+  totalPages,
   onChange,
   onSubmit,
   onEdit,
   onDelete,
   onCancelEdit,
+  onPageChange,
   onRefresh,
   onLogout,
 }: ExpenseDetailsPresenterProps) => {
@@ -272,6 +278,27 @@ const ExpenseDetailsPresenter = ({
                 </div>
               ))
             )}
+          </div>
+          <div className="expense-details__pagination">
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+            </button>
           </div>
         </div>
       </section>

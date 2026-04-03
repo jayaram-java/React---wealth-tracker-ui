@@ -152,6 +152,20 @@
   color: var(--muted);
 }
 
+.expense-details__pagination {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  align-items: center;
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.expense-details__pagination .link-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 1200px) {
   .expense-details__layout {
     grid-template-columns: 1fr;
