@@ -138,6 +138,7 @@ const ExpenseDetailsContainer = () => {
     if (userId === null) {
       return;
     }
+    console.log('ExpenseDetails userId:', userId);
     setFormState((prev) => ({
       ...prev,
       userId: String(userId),

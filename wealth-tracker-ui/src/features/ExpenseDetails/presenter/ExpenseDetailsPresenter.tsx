@@ -127,28 +127,6 @@ const ExpenseDetailsPresenter = ({
               />
             </label>
             <label>
-              Expense Code
-              <input
-                type="text"
-                value={formState.expenseCode}
-                onChange={(event) => onChange('expenseCode', event.target.value)}
-                required
-                disabled={isEditing}
-              />
-            </label>
-            <label>
-              Reference Number
-              <input
-                type="text"
-                value={formState.referenceNumber}
-                onChange={(event) =>
-                  onChange('referenceNumber', event.target.value)
-                }
-                required
-                disabled={isEditing}
-              />
-            </label>
-            <label>
               Receipt URL
               <input
                 type="url"
