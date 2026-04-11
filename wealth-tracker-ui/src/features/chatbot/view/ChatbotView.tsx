@@ -75,7 +75,13 @@ const ChatbotView = ({
         onClick={onToggle}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
       >
-        <span>{isOpen ? 'Close' : 'Chat'}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M6.5 6.5h11a3.5 3.5 0 0 1 3.5 3.5v4a3.5 3.5 0 0 1-3.5 3.5H11l-4.5 3v-3H6.5A3.5 3.5 0 0 1 3 14v-4a3.5 3.5 0 0 1 3.5-3.5Z"
+            fill="currentColor"
+          />
+        </svg>
+        <span className="sr-only">Chat</span>
       </button>
 
       {isOpen && (
@@ -99,8 +105,22 @@ const ChatbotView = ({
                   </option>
                 ))}
               </select>
-              <button type="button" onClick={onToggle}>
-                Close
+              <button
+                type="button"
+                onClick={onToggle}
+                className="chatbot-icon-button"
+                aria-label="Close chat"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M18 6 6 18M6 6l12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="sr-only">Close</span>
               </button>
             </div>
           </header>
@@ -177,10 +197,30 @@ const ChatbotView = ({
                 onClick={isListening ? onStopListening : onStartListening}
                 aria-label={isListening ? 'Stop listening' : 'Start voice input'}
               >
-                {isListening ? 'Stop' : 'Voice'}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M5 11a1 1 0 1 1 2 0 5 5 0 0 0 10 0 1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21a1 1 0 1 1-2 0v-3.08A7 7 0 0 1 5 11Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <span className="sr-only">
+                  {isListening ? 'Stop' : 'Voice'}
+                </span>
               </button>
             )}
-            <button type="submit">Send</button>
+            <button type="submit" className="chatbot-panel__send">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M21 12 3 4v6l11 2-11 2v6l18-8Z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span className="sr-only">Send</span>
+            </button>
           </form>
         </div>
       )}

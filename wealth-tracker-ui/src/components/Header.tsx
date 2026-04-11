@@ -20,6 +20,8 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showDashboard = isAdmin || isUser || roles.length === 0;
   const showExpenseDetails = isAdmin || isUser;
   const showExpenseCategories = isAdmin;
+  const showChecklistCategories = isAdmin;
+  const showChecklists = isAdmin || isUser;
   const showWebsiteCategories = isAdmin;
   const showWebsiteLinks = isAdmin;
 
@@ -40,46 +42,83 @@ const Header = ({ onLogout }: HeaderProps) => {
             Dashboard
           </NavLink>
         ) : null}
-        {showExpenseCategories ? (
-          <NavLink
-            to="/expense-categories"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
-          >
-            Expense Categories
-          </NavLink>
-        ) : null}
-        {showExpenseDetails ? (
-          <NavLink
-            to="/expense-details"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
-          >
-            Expense Details
-          </NavLink>
-        ) : null}
-        {showWebsiteCategories ? (
-          <NavLink
-            to="/website-categories"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
-          >
-            Website Categories
-          </NavLink>
-        ) : null}
-        {showWebsiteLinks ? (
-          <NavLink
-            to="/website-links"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
-          >
-            Website Links
-          </NavLink>
-        ) : null}
+        <details className="app-header__dropdown">
+          <summary className="app-header__link app-header__summary">
+            Manage
+            <span className="app-header__chevron">▾</span>
+          </summary>
+          <div className="app-header__menu">
+            <div className="app-header__menu-section">
+              <span className="app-header__menu-title">Expenses</span>
+              {showExpenseDetails ? (
+                <NavLink
+                  to="/expense-details"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Expenses
+                </NavLink>
+              ) : null}
+              {showExpenseCategories ? (
+                <NavLink
+                  to="/expense-categories"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Categories
+                </NavLink>
+              ) : null}
+            </div>
+            <div className="app-header__menu-section">
+              <span className="app-header__menu-title">Checklist</span>
+              {showChecklists ? (
+                <NavLink
+                  to="/checklists"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Checklists
+                </NavLink>
+              ) : null}
+              {showChecklistCategories ? (
+                <NavLink
+                  to="/checklist-categories"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Categories
+                </NavLink>
+              ) : null}
+            </div>
+            <div className="app-header__menu-section">
+              <span className="app-header__menu-title">Resources</span>
+              {showWebsiteLinks ? (
+                <NavLink
+                  to="/website-links"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Links
+                </NavLink>
+              ) : null}
+              {showWebsiteCategories ? (
+                <NavLink
+                  to="/website-categories"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Categories
+                </NavLink>
+              ) : null}
+            </div>
+          </div>
+        </details>
       </nav>
       {onLogout ? (
         <button className="ghost-button" onClick={onLogout}>

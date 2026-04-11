@@ -7,6 +7,8 @@ import ExpenseCategoryContainer from './features/ExpenseCategory/container/Expen
 import ExpenseDetailsContainer from './features/ExpenseDetails/container/ExpenseDetailsContainer';
 import WebsiteCategoryContainer from './features/WebsiteCategory/container/WebsiteCategoryContainer';
 import WebsiteLinkContainer from './features/WebsiteLink/container/WebsiteLinkContainer';
+import ChecklistCategoryContainer from './features/ChecklistCategory/container/ChecklistCategoryContainer';
+import ChecklistContainer from './features/Checklist/container/ChecklistContainer';
 import FloatingChatbotContainer from './features/chatbot/container/FloatingChatbotContainer';
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -43,6 +45,22 @@ const AppRoutes = () => (
       element={
         <RequireAuth>
           <ExpenseDetailsContainer />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/checklist-categories"
+      element={
+        <RequireAuth>
+          <ChecklistCategoryContainer />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/checklists"
+      element={
+        <RequireAuth>
+          <ChecklistContainer />
         </RequireAuth>
       }
     />

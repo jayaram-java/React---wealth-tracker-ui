@@ -25,4 +25,12 @@ export const API_ENDPOINTS = {
     linkById: (id: number) =>
       `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-links/${id}`,
   },
+  checklist: {
+    categories: `${EXPENSE_BASE_URL}/expenseservice/api/v1/checklist-categories`,
+    categoryById: (id: number) =>
+      `${EXPENSE_BASE_URL}/expenseservice/api/v1/checklist-categories/${id}`,
+    items: `${EXPENSE_BASE_URL}/expenseservice/api/v1/checklists`,
+    itemById: (id: number) =>
+      `${EXPENSE_BASE_URL}/expenseservice/api/v1/checklists/${id}`,
+  },
 };

@@ -61,6 +61,7 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isListening, setIsListening] = useState(false);
   const messageId = useRef(0);
+  const inputRef = useRef('');
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const greetedRef = useRef(false);
 
@@ -160,6 +161,10 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
     ]
   );
 
+  useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
+
   const handleQuickPrompt = useCallback(
     (prompt: string) => {
       handleSend(prompt);
@@ -220,7 +225,11 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
       recognition.interimResults = false;
       recognition.onresult = (event) => {
         const transcript = event.results?.[0]?.[0]?.transcript ?? '';
-        setInput((prev) => normalizeInput(`${prev} ${transcript}`));
+        const composed = normalizeInput(`${inputRef.current} ${transcript}`);
+        setInput(composed);
+        if (composed) {
+          handleSend(composed);
+        }
       };
       recognition.onerror = () => {
         setIsListening(false);
@@ -232,7 +241,7 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
     }
     recognitionRef.current.lang = LANGUAGE_LOCALE_MAP[language];
     return recognitionRef.current;
-  }, [language, speechSupported]);
+  }, [handleSend, language, speechSupported]);
 
   const handleStartListening = useCallback(() => {
     const recognition = initRecognition();

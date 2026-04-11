@@ -1,3 +1,4 @@
+import Fuse from 'fuse.js';
 import type { IntentResult, LanguageCode, PendingAction } from '../types/ChatbotTypes';
 import {
   ALLOWED_ROUTES,
@@ -49,6 +50,37 @@ const normalizeForIntent = (value: string, language: LanguageCode) => {
 const includesAny = (value: string, tokens: string[]) =>
   tokens.some((token) => value.includes(token));
 
+const ROUTE_FUSE = new Fuse(
+  ALLOWED_ROUTES.map((route) => ({
+    ...route,
+    keywordBlob: route.keywords.join(' '),
+  })),
+  {
+    keys: ['label', 'keywordBlob'],
+    threshold: 0.35,
+    distance: 120,
+    minMatchCharLength: 3,
+    ignoreLocation: true,
+    includeScore: true,
+  }
+);
+
+const FAQ_FUSE = new Fuse(
+  FAQ_ENTRIES.map((entry) => ({
+    ...entry,
+    keywordBlob: entry.keywords.join(' '),
+    questionBlob: Object.values(entry.question).join(' '),
+  })),
+  {
+    keys: ['keywordBlob', 'questionBlob'],
+    threshold: 0.38,
+    distance: 140,
+    minMatchCharLength: 3,
+    ignoreLocation: true,
+    includeScore: true,
+  }
+);
+
 const matchRoute = (value: string) => {
   let best: { score: number; index: number } | null = null;
   ALLOWED_ROUTES.forEach((route, index) => {
@@ -62,11 +94,29 @@ const matchRoute = (value: string) => {
       best = { score, index };
     }
   });
-  return best ? ALLOWED_ROUTES[best.index] : null;
+  if (best) {
+    return ALLOWED_ROUTES[best.index];
+  }
+  const fuseMatch = ROUTE_FUSE.search(value, { limit: 1 })[0];
+  if (fuseMatch && (fuseMatch.score ?? 1) <= 0.45) {
+    return fuseMatch.item;
+  }
+  return null;
 };
 
-const matchFaq = (value: string) =>
-  FAQ_ENTRIES.find((entry) => includesAny(value, entry.keywords));
+const matchFaq = (value: string) => {
+  const keywordMatch = FAQ_ENTRIES.find((entry) =>
+    includesAny(value, entry.keywords)
+  );
+  if (keywordMatch) {
+    return keywordMatch;
+  }
+  const fuseMatch = FAQ_FUSE.search(value, { limit: 1 })[0];
+  if (fuseMatch && (fuseMatch.score ?? 1) <= 0.5) {
+    return fuseMatch.item;
+  }
+  return null;
+};
 
 const isGreeting = (value: string) =>
   includesAny(value, ['hi', 'hello', 'hey', 'namaste', 'hola']);
