@@ -7,6 +7,7 @@ import ExpenseCategoryContainer from './features/ExpenseCategory/container/Expen
 import ExpenseDetailsContainer from './features/ExpenseDetails/container/ExpenseDetailsContainer';
 import WebsiteCategoryContainer from './features/WebsiteCategory/container/WebsiteCategoryContainer';
 import WebsiteLinkContainer from './features/WebsiteLink/container/WebsiteLinkContainer';
+import FloatingChatbotContainer from './features/chatbot/container/FloatingChatbotContainer';
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
@@ -70,6 +71,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRoutes />
+        <FloatingChatbotContainer />
       </BrowserRouter>
     </AuthProvider>
   );
