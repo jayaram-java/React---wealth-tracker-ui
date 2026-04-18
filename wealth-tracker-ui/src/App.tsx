@@ -10,6 +10,7 @@ import WebsiteLinkContainer from './features/WebsiteLink/container/WebsiteLinkCo
 import ChecklistCategoryContainer from './features/ChecklistCategory/container/ChecklistCategoryContainer';
 import ChecklistContainer from './features/Checklist/container/ChecklistContainer';
 import FloatingChatbotContainer from './features/chatbot/container/FloatingChatbotContainer';
+import ExpenseReportContainer from './features/ExpenseReport/container/ExpenseReportContainer';
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated } = useAuth();
@@ -77,6 +78,14 @@ const AppRoutes = () => (
       element={
         <RequireAuth>
           <WebsiteLinkContainer />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/expense-reports"
+      element={
+        <RequireAuth>
+          <ExpenseReportContainer />
         </RequireAuth>
       }
     />

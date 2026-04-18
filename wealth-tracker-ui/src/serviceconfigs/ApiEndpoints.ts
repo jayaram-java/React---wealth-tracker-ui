@@ -2,6 +2,8 @@ const AUTH_BASE_URL =
   import.meta.env.VITE_AUTH_BASE_URL ?? 'http://localhost:8085';
 const EXPENSE_BASE_URL =
   import.meta.env.VITE_EXPENSE_BASE_URL ?? 'http://localhost:8086';
+const REPORT_AUTOMATION_BASE_URL =
+  import.meta.env.VITE_REPORT_AUTOMATION_BASE_URL ?? 'http://localhost:8089';
 
 export const API_ENDPOINTS = {
   auth: {
@@ -16,6 +18,8 @@ export const API_ENDPOINTS = {
       `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-details/${id}`,
     summary: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/summary`,
     trends: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/trends`,
+    reportDetails: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/details`,
+    reportPdf: `${REPORT_AUTOMATION_BASE_URL}/report-automation-service/documents/expense/pdf`,
   },
   website: {
     categories: `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-categories`,

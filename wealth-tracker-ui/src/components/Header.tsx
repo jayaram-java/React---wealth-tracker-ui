@@ -24,6 +24,7 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showChecklists = isAdmin || isUser;
   const showWebsiteCategories = isAdmin;
   const showWebsiteLinks = isAdmin;
+  const showExpenseReport = isAdmin || isUser;
 
   return (
     <header className="app-header">
@@ -45,7 +46,7 @@ const Header = ({ onLogout }: HeaderProps) => {
         <details className="app-header__dropdown">
           <summary className="app-header__link app-header__summary">
             Manage
-            <span className="app-header__chevron">▾</span>
+            <span className="app-header__chevron">v</span>
           </summary>
           <div className="app-header__menu">
             <div className="app-header__menu-section">
@@ -114,6 +115,27 @@ const Header = ({ onLogout }: HeaderProps) => {
                   }
                 >
                   Categories
+                </NavLink>
+              ) : null}
+            </div>
+          </div>
+        </details>
+        <details className="app-header__dropdown">
+          <summary className="app-header__link app-header__summary">
+            Report
+            <span className="app-header__chevron">v</span>
+          </summary>
+          <div className="app-header__menu">
+            <div className="app-header__menu-section">
+              <span className="app-header__menu-title">Expense</span>
+              {showExpenseReport ? (
+                <NavLink
+                  to="/expense-reports"
+                  className={({ isActive }) =>
+                    `app-header__menu-link${isActive ? ' active' : ''}`
+                  }
+                >
+                  Expense
                 </NavLink>
               ) : null}
             </div>
