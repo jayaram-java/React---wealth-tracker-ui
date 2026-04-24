@@ -13,7 +13,7 @@ import type {
   WebsiteCategoryCreatePayload,
   WebsiteCategoryUpdatePayload,
 } from '../types/WebsiteCategoryTypes';
-import { useAuth } from '../../login/context/AuthProvider';
+import { useAuth } from '../../login/context/useAuth';
 
 const buildDefaultFormState = (username: string) => ({
   categoryName: '',

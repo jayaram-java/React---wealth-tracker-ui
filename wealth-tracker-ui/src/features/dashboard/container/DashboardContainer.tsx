@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardPresenter from '../presenter/DashboardPresenter';
-import { useAuth } from '../../login/context/AuthProvider';
+import { useAuth } from '../../login/context/useAuth';
 import { getRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';

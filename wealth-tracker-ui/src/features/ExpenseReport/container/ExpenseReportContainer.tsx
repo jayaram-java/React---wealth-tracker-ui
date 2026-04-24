@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
-import { useAuth } from '../../login/context/AuthProvider';
+import { useAuth } from '../../login/context/useAuth';
 import { decodeJwtPayload } from '../../../utils/jwt';
 import type { ExpenseCategory } from '../../ExpenseCategory/types/ExpenseCategoryTypes';
 import ExpenseReportPresenter from '../presenter/ExpenseReportPresenter';

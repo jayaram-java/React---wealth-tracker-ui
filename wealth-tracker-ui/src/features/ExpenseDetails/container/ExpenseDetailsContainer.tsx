@@ -7,7 +7,7 @@ import {
   putRequest,
 } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
-import { useAuth } from '../../login/context/AuthProvider';
+import { useAuth } from '../../login/context/useAuth';
 import ExpenseDetailsPresenter from '../presenter/ExpenseDetailsPresenter';
 import type { ExpenseCategory } from '../../ExpenseCategory/types/ExpenseCategoryTypes';
 import type {

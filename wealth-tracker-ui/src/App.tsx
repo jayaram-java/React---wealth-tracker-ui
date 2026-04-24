@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import LoginContainer from './features/login/container/LoginContainer';
 import DashboardContainer from './features/dashboard/container/DashboardContainer';
-import { AuthProvider, useAuth } from './features/login/context/AuthProvider';
+import { AuthProvider } from './features/login/context/AuthProvider';
 import ExpenseCategoryContainer from './features/ExpenseCategory/container/ExpenseCategoryContainer';
 import ExpenseDetailsContainer from './features/ExpenseDetails/container/ExpenseDetailsContainer';
 import WebsiteCategoryContainer from './features/WebsiteCategory/container/WebsiteCategoryContainer';
@@ -11,85 +11,79 @@ import ChecklistCategoryContainer from './features/ChecklistCategory/container/C
 import ChecklistContainer from './features/Checklist/container/ChecklistContainer';
 import FloatingChatbotContainer from './features/chatbot/container/FloatingChatbotContainer';
 import ExpenseReportContainer from './features/ExpenseReport/container/ExpenseReportContainer';
-
-const RequireAuth = ({ children }: { children: JSX.Element }) => {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
+import ProtectedRoute from './features/login/components/ProtectedRoute';
+import PersistLastLocation from './features/login/components/PersistLastLocation';
+import LandingRedirect from './features/login/components/LandingRedirect';
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Navigate to="/login" replace />} />
+    <Route path="/" element={<LandingRedirect />} />
     <Route path="/login" element={<LoginContainer />} />
     <Route
       path="/dashboard"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <DashboardContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/expense-categories"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <ExpenseCategoryContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/expense-details"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <ExpenseDetailsContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/checklist-categories"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <ChecklistCategoryContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/checklists"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <ChecklistContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/website-categories"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <WebsiteCategoryContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/website-links"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <WebsiteLinkContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
     <Route
       path="/expense-reports"
       element={
-        <RequireAuth>
+        <ProtectedRoute>
           <ExpenseReportContainer />
-        </RequireAuth>
+        </ProtectedRoute>
       }
     />
-    <Route path="*" element={<Navigate to="/login" replace />} />
+    <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
 
@@ -97,6 +91,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <PersistLastLocation />
         <AppRoutes />
         <FloatingChatbotContainer />
       </BrowserRouter>

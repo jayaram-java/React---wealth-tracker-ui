@@ -15,4 +15,5 @@ export interface AuthPayload extends LoginResponse {
 
 export interface AuthState extends AuthPayload {
   isAuthenticated: boolean;
+  isHydrated: boolean;
 }

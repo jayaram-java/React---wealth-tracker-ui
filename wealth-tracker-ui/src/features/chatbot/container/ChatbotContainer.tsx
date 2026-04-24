@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../login/context/AuthProvider';
+import { useAuth } from '../../login/context/useAuth';
 import ChatbotPresenter from '../presenter/ChatbotPresenter';
 import type {
   ChatMessage,

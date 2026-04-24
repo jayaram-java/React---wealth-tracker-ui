@@ -9,7 +9,7 @@ import type {
   ExpenseCategoryStatus,
   ExpenseCategoryUpdatePayload,
 } from '../types/ExpenseCategoryTypes';
-import { useAuth } from '../../login/context/AuthProvider';
+import { useAuth } from '../../login/context/useAuth';
 import { decodeJwtPayload } from '../../../utils/jwt';
 
 interface JwtPayload {

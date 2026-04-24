@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import './Header.css';
-import { useAuth } from '../features/login/context/AuthProvider';
+import { useAuth } from '../features/login/context/useAuth';
 import { decodeJwtPayload } from '../utils/jwt';
 
 interface HeaderProps {
