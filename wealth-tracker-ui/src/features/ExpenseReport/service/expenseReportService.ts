@@ -1,4 +1,4 @@
-import { getRequest } from '../../../serviceconfigs/AxiosAPI';
+import { getRequest, postRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import type { ExpenseReportItem } from '../types/ExpenseReportTypes';
 
@@ -7,6 +7,20 @@ interface FetchExpenseReportParams {
   startDate: string;
   endDate: string;
   authHeader?: Record<string, string>;
+}
+
+export interface ExpenseReportEmailRequest {
+  userId: number;
+  startDate: string;
+  endDate: string;
+  subject: string;
+  body: string;
+}
+
+export interface ExpenseReportEmailResponse {
+  message: string;
+  to: string;
+  attachmentFileName: string;
 }
 
 export const fetchExpenseReportDetails = async ({
@@ -54,4 +68,15 @@ export const downloadExpensePdf = async (
   }
 
   return blob;
+};
+
+export const sendExpenseReportEmail = async (
+  payload: ExpenseReportEmailRequest,
+  authHeader?: Record<string, string>
+): Promise<ExpenseReportEmailResponse> => {
+  return postRequest<ExpenseReportEmailResponse, ExpenseReportEmailRequest>(
+    API_ENDPOINTS.reportAutomation.sendExpenseDetailsEmail,
+    payload,
+    { headers: authHeader }
+  );
 };

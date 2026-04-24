@@ -14,16 +14,23 @@ interface ExpenseReportPresenterProps {
   reportRows: ExpenseReportItem[];
   isLoading: boolean;
   isPdfLoading: boolean;
+  isEmailSending: boolean;
   errorMessage: string | null;
+  successMessage: string | null;
   currentPage: number;
   totalPages: number;
   sortField: ExpenseReportSortField;
   sortOrder: ExpenseReportSortOrder;
+  emailSubject: string;
+  emailBody: string;
   onFilterChange: (field: keyof ExpenseReportFilters, value: string) => void;
   onApplyFilters: () => void;
   onRefresh: () => void;
   onViewPdf: () => void;
   onDownloadPdf: () => void;
+  onSendEmail: () => void;
+  onEmailSubjectChange: (value: string) => void;
+  onEmailBodyChange: (value: string) => void;
   onSortChange: (field: ExpenseReportSortField) => void;
   onPageChange: (page: number) => void;
   onLogout: () => void;
@@ -66,16 +73,23 @@ const ExpenseReportPresenter = ({
   reportRows,
   isLoading,
   isPdfLoading,
+  isEmailSending,
   errorMessage,
+  successMessage,
   currentPage,
   totalPages,
   sortField,
   sortOrder,
+  emailSubject,
+  emailBody,
   onFilterChange,
   onApplyFilters,
   onRefresh,
   onViewPdf,
   onDownloadPdf,
+  onSendEmail,
+  onEmailSubjectChange,
+  onEmailBodyChange,
   onSortChange,
   onPageChange,
   onLogout,
@@ -131,9 +145,37 @@ const ExpenseReportPresenter = ({
           </select>
         </label>
 
+        <label>
+          Email Subject
+          <input
+            type="text"
+            value={emailSubject}
+            onChange={(event) => onEmailSubjectChange(event.target.value)}
+            placeholder="My expense report"
+          />
+        </label>
+
+        <label className="expense-report__email-body">
+          Email Body
+          <textarea
+            value={emailBody}
+            onChange={(event) => onEmailBodyChange(event.target.value)}
+            rows={2}
+            placeholder="Please find the PDF attached."
+          />
+        </label>
+
         <div className="expense-report__filter-actions">
           <button className="primary-button" onClick={onApplyFilters}>
             Apply Filters
+          </button>
+          <button
+            type="button"
+            className="ghost-button"
+            onClick={onSendEmail}
+            disabled={isEmailSending}
+          >
+            {isEmailSending ? 'Sending Email...' : 'Send Email'}
           </button>
           <button
             type="button"
@@ -154,6 +196,9 @@ const ExpenseReportPresenter = ({
         </div>
       </section>
 
+      {successMessage ? (
+        <p className="expense-report__success">{successMessage}</p>
+      ) : null}
       {errorMessage ? <p className="expense-report__error">{errorMessage}</p> : null}
 
       <section className="expense-report__card expense-report__table-card">

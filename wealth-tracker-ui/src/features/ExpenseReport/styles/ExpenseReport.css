@@ -49,11 +49,21 @@
 }
 
 .expense-report__filters input,
-.expense-report__filters select {
+.expense-report__filters select,
+.expense-report__filters textarea {
   border-radius: 10px;
   border: 1px solid var(--outline);
   padding: 10px 12px;
   font-size: 14px;
+}
+
+.expense-report__filters textarea {
+  resize: vertical;
+  min-height: 44px;
+}
+
+.expense-report__email-body {
+  grid-column: 1 / -1;
 }
 
 .expense-report__filter-actions {
@@ -62,6 +72,12 @@
   align-items: center;
   flex-wrap: wrap;
   grid-column: 1 / -1;
+}
+
+.expense-report__success {
+  margin: 0 32px 16px;
+  color: #166534;
+  font-weight: 600;
 }
 
 .expense-report__error {
@@ -155,6 +171,7 @@
 @media (max-width: 700px) {
   .expense-report__hero,
   .expense-report__card,
+  .expense-report__success,
   .expense-report__error {
     margin-left: 14px;
     margin-right: 14px;

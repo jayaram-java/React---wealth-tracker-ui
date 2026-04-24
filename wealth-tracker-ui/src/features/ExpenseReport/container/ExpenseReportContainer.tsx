@@ -9,6 +9,7 @@ import ExpenseReportPresenter from '../presenter/ExpenseReportPresenter';
 import {
   downloadExpensePdf,
   fetchExpenseReportDetails,
+  sendExpenseReportEmail,
 } from '../service/expenseReportService';
 import type {
   ExpenseReportFilters,
@@ -21,11 +22,31 @@ interface JwtPayload {
   userId?: number;
 }
 
+const buildDefaultEmailSubject = (startDate: string, endDate: string) =>
+  `Expense report (${startDate} to ${endDate})`;
+
+const buildDefaultEmailBody = (startDate: string, endDate: string) =>
+  `Please find the expense report PDF attached for ${startDate} to ${endDate}.`;
+
 const formatDateForInput = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+const normalizeEmailRecipient = (to: string) => {
+  const mailtoMatch = to.match(/mailto:([^)\s]+)/i);
+  if (mailtoMatch?.[1]) {
+    return mailtoMatch[1];
+  }
+
+  const bracketMatch = to.match(/\[([^\]]+)\]/);
+  if (bracketMatch?.[1]) {
+    return bracketMatch[1];
+  }
+
+  return to;
 };
 
 const buildDefaultFilters = (): ExpenseReportFilters => {
@@ -43,18 +64,28 @@ const ExpenseReportContainer = () => {
   const navigate = useNavigate();
   const { accessToken, tokenType, logout } = useAuth();
 
-  const [filters, setFilters] = useState<ExpenseReportFilters>(() =>
-    buildDefaultFilters()
-  );
+  const initialFilters = useMemo(() => buildDefaultFilters(), []);
+
+  const [filters, setFilters] = useState<ExpenseReportFilters>(() => initialFilters);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [reportRows, setReportRows] = useState<ExpenseReportItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [isEmailSending, setIsEmailSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] =
     useState<ExpenseReportSortField>('expenseDate');
   const [sortOrder, setSortOrder] = useState<ExpenseReportSortOrder>('desc');
+  const [emailSubject, setEmailSubject] = useState(() =>
+    buildDefaultEmailSubject(initialFilters.startDate, initialFilters.endDate)
+  );
+  const [emailBody, setEmailBody] = useState(() =>
+    buildDefaultEmailBody(initialFilters.startDate, initialFilters.endDate)
+  );
+  const [isEmailSubjectDirty, setIsEmailSubjectDirty] = useState(false);
+  const [isEmailBodyDirty, setIsEmailBodyDirty] = useState(false);
 
   const pageSize = 10;
 
@@ -143,6 +174,15 @@ const ExpenseReportContainer = () => {
     fetchReportData(filters);
   }, [accessToken, fetchCategories, fetchReportData, navigate]);
 
+  useEffect(() => {
+    if (!isEmailSubjectDirty) {
+      setEmailSubject(buildDefaultEmailSubject(filters.startDate, filters.endDate));
+    }
+    if (!isEmailBodyDirty) {
+      setEmailBody(buildDefaultEmailBody(filters.startDate, filters.endDate));
+    }
+  }, [filters.endDate, filters.startDate, isEmailBodyDirty, isEmailSubjectDirty]);
+
   const sortedRows = useMemo(() => {
     const rows = [...reportRows];
 
@@ -185,11 +225,13 @@ const ExpenseReportContainer = () => {
 
   const handleApplyFilters = () => {
     setCurrentPage(1);
+    setSuccessMessage(null);
     fetchReportData(filters);
   };
 
   const handleRefresh = () => {
     setCurrentPage(1);
+    setSuccessMessage(null);
     fetchCategories();
     fetchReportData(filters);
   };
@@ -291,6 +333,61 @@ const ExpenseReportContainer = () => {
     }
   };
 
+  const handleSendEmail = async () => {
+    if (userId === null) {
+      setErrorMessage('Unable to read userId from access token.');
+      setSuccessMessage(null);
+      return;
+    }
+
+    const dateRange = getValidatedDateRange();
+    if (!dateRange) {
+      setSuccessMessage(null);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Send expense report email for ${dateRange.startDate} to ${dateRange.endDate}?`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setIsEmailSending(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await sendExpenseReportEmail(
+        {
+          userId,
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          subject: emailSubject.trim()
+            ? emailSubject.trim()
+            : buildDefaultEmailSubject(dateRange.startDate, dateRange.endDate),
+          body: emailBody.trim()
+            ? emailBody.trim()
+            : buildDefaultEmailBody(dateRange.startDate, dateRange.endDate),
+        },
+        authHeader
+      );
+
+      const recipient = normalizeEmailRecipient(response.to);
+      setSuccessMessage(
+        `${response.message}. To: ${recipient}. Attachment: ${response.attachmentFileName}`
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Unable to send expense report email.';
+      setErrorMessage(message);
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
   const handleSortChange = (field: ExpenseReportSortField) => {
     setCurrentPage(1);
     setSortField((prevField) => {
@@ -314,6 +411,16 @@ const ExpenseReportContainer = () => {
     navigate('/login');
   };
 
+  const handleEmailSubjectChange = (value: string) => {
+    setIsEmailSubjectDirty(true);
+    setEmailSubject(value);
+  };
+
+  const handleEmailBodyChange = (value: string) => {
+    setIsEmailBodyDirty(true);
+    setEmailBody(value);
+  };
+
   return (
     <ExpenseReportPresenter
       filters={filters}
@@ -321,16 +428,23 @@ const ExpenseReportContainer = () => {
       reportRows={pagedRows}
       isLoading={isLoading}
       isPdfLoading={isPdfLoading}
+      isEmailSending={isEmailSending}
       errorMessage={errorMessage}
+      successMessage={successMessage}
       currentPage={currentPage}
       totalPages={totalPages}
       sortField={sortField}
       sortOrder={sortOrder}
+      emailSubject={emailSubject}
+      emailBody={emailBody}
       onFilterChange={handleFilterChange}
       onApplyFilters={handleApplyFilters}
       onRefresh={handleRefresh}
       onViewPdf={handleViewPdf}
       onDownloadPdf={handleDownloadPdf}
+      onSendEmail={handleSendEmail}
+      onEmailSubjectChange={handleEmailSubjectChange}
+      onEmailBodyChange={handleEmailBodyChange}
       onSortChange={handleSortChange}
       onPageChange={handlePageChange}
       onLogout={handleLogout}

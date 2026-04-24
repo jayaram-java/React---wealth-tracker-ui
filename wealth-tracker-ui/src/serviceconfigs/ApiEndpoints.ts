@@ -21,6 +21,9 @@ export const API_ENDPOINTS = {
     reportDetails: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/details`,
     reportPdf: `${REPORT_AUTOMATION_BASE_URL}/report-automation-service/documents/expense/pdf`,
   },
+  reportAutomation: {
+    sendExpenseDetailsEmail: `${REPORT_AUTOMATION_BASE_URL}/report-automation-service/api/v1/email/sendemailforexpensedetails`,
+  },
   website: {
     categories: `${EXPENSE_BASE_URL}/expenseservice/api/v1/website-categories`,
     categoryById: (id: number) =>
