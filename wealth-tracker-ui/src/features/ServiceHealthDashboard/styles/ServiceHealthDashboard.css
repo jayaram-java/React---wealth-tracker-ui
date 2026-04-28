@@ -1,0 +1,179 @@
+.service-health {
+  min-height: 100vh;
+  background: #0b1020;
+  color: #f5f7ff;
+}
+
+.service-health__hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.service-health__eyebrow {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.service-health__subtitle {
+  margin: 8px 0 0;
+  max-width: 720px;
+  opacity: 0.85;
+}
+
+.service-health__banner {
+  margin: 16px 24px 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 90, 90, 0.12);
+  border: 1px solid rgba(255, 90, 90, 0.35);
+}
+
+.service-health__list {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.service-health__empty {
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  opacity: 0.8;
+}
+
+.service-health__card {
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.service-health__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.service-health__card-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.service-health__card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.service-health__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.service-health__card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.service-health__card-error,
+.service-health__details-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 90, 90, 0.12);
+  border: 1px solid rgba(255, 90, 90, 0.3);
+  font-size: 13px;
+}
+
+.service-health__card-details {
+  margin-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 14px;
+}
+
+.service-health__details-loading {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.service-health__details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.service-health__json-block {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px;
+}
+
+.service-health__json-block h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.service-health__json-block pre {
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(245, 247, 255, 0.88);
+}
+
+.service-health__prometheus {
+  white-space: pre;
+}
+
+.service-health__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.service-health__status--UP {
+  background: rgba(44, 193, 125, 0.16);
+  border: 1px solid rgba(44, 193, 125, 0.38);
+  color: #41d497;
+}
+
+.service-health__status--DOWN {
+  background: rgba(255, 90, 90, 0.14);
+  border: 1px solid rgba(255, 90, 90, 0.4);
+  color: #ff6b6b;
+}
+
+.service-health__status--DEGRADED {
+  background: rgba(255, 192, 84, 0.18);
+  border: 1px solid rgba(255, 192, 84, 0.45);
+  color: #ffc054;
+}
+
+.service-health__status--UNKNOWN {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.78);
+}

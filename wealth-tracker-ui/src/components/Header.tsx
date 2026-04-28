@@ -23,8 +23,9 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showChecklistCategories = isAdmin;
   const showChecklists = isAdmin || isUser;
   const showWebsiteCategories = isAdmin;
-  const showWebsiteLinks = isAdmin;
+  const showWebsiteLinks = isAdmin || isUser;
   const showExpenseReport = isAdmin || isUser;
+  const showServiceHealth = isAdmin;
 
   return (
     <header className="app-header">
@@ -141,6 +142,16 @@ const Header = ({ onLogout }: HeaderProps) => {
             </div>
           </div>
         </details>
+        {showServiceHealth ? (
+          <NavLink
+            to="/service-health"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Service Health
+          </NavLink>
+        ) : null}
       </nav>
       {onLogout ? (
         <button className="ghost-button" onClick={onLogout}>

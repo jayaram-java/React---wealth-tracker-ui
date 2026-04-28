@@ -14,6 +14,8 @@ import ExpenseReportContainer from './features/ExpenseReport/container/ExpenseRe
 import ProtectedRoute from './features/login/components/ProtectedRoute';
 import PersistLastLocation from './features/login/components/PersistLastLocation';
 import LandingRedirect from './features/login/components/LandingRedirect';
+import AdminRoute from './features/login/components/AdminRoute';
+import ServiceHealthDashboardContainer from './features/ServiceHealthDashboard/container/ServiceHealthDashboardContainer';
 
 const AppRoutes = () => (
   <Routes>
@@ -81,6 +83,14 @@ const AppRoutes = () => (
         <ProtectedRoute>
           <ExpenseReportContainer />
         </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/service-health"
+      element={
+        <AdminRoute>
+          <ServiceHealthDashboardContainer />
+        </AdminRoute>
       }
     />
     <Route path="*" element={<Navigate to="/" replace />} />

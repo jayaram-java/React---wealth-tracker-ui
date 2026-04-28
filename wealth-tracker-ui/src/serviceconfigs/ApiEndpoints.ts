@@ -9,6 +9,39 @@ export const API_ENDPOINTS = {
   auth: {
     login: `${AUTH_BASE_URL}/authservice/api/auth/login`,
   },
+  actuator: {
+    authService: {
+      baseUrl: '/authservice',
+      health: '/authservice/actuator/health',
+      info: '/authservice/actuator/info',
+      metricsIndex: '/authservice/actuator/metrics',
+      prometheus: '/authservice/actuator/prometheus',
+      customMetrics: {
+        apiRequestsTotal: '/authservice/actuator/metrics/app_api_requests_total',
+        apiRequestDuration: '/authservice/actuator/metrics/app_api_request_duration',
+      },
+    },
+    spendwiseService: {
+      baseUrl: '/expenseservice',
+      health: '/expenseservice/actuator/health',
+      prometheus: '/expenseservice/actuator/prometheus',
+      customMetrics: {
+        apiRequestsTotal: '/expenseservice/actuator/metrics/app_api_requests_total',
+        apiRequestDuration: '/expenseservice/actuator/metrics/app_api_request_duration',
+      },
+    },
+    reportAutomationService: {
+      baseUrl: '/report-automation-service',
+      health: '/report-automation-service/actuator/health',
+      prometheus: '/report-automation-service/actuator/prometheus',
+      customMetrics: {
+        apiRequestsTotal:
+          '/report-automation-service/actuator/metrics/app_api_requests_total',
+        apiRequestDuration:
+          '/report-automation-service/actuator/metrics/app_api_request_duration',
+      },
+    },
+  },
   expense: {
     categories: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-categories`,
     categoryById: (id: number) =>
