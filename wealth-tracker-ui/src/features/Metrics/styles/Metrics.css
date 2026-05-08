@@ -1,0 +1,342 @@
+.metricsPage {
+  min-height: 100vh;
+  padding: 14px 16px 24px;
+  background: radial-gradient(1200px 800px at 30% -10%, rgba(97, 218, 251, 0.14), transparent),
+    radial-gradient(900px 600px at 100% 10%, rgba(167, 139, 250, 0.14), transparent),
+    #0b0f17;
+  color: #e7eaf0;
+}
+
+.metricsHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.metricsHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.metricsHeaderRight {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.metricsGrid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 1024px) {
+  .metricsGrid {
+    grid-template-columns: 1fr 380px;
+    grid-template-areas:
+      "charts summary"
+      "charts table"
+      "averages table";
+    align-items: start;
+  }
+
+  .metricsSummary {
+    grid-area: summary;
+  }
+  .metricsTable {
+    grid-area: table;
+  }
+  .metricsCharts {
+    grid-area: charts;
+  }
+  .metricsAverages {
+    grid-area: averages;
+  }
+}
+
+.metricsSection {
+  width: 100%;
+}
+
+.metricsCard {
+  background: rgba(18, 26, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.metricsCard--padded {
+  padding: 14px;
+}
+
+.metricsCardTitle {
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  color: rgba(231, 234, 240, 0.82);
+}
+
+.metricsCardValueRow {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.metricsCardValue {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.metricsCardHint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(231, 234, 240, 0.72);
+}
+
+.metricsSectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.metricsMuted {
+  color: rgba(231, 234, 240, 0.65);
+}
+
+.metricsMono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+}
+
+.metricsSummaryGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.metricsSummaryCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 520px) {
+  .metricsSummaryCards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .metricsSummaryCards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metricsStatus {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+.metricsStatus--good {
+  background: rgba(52, 211, 153, 0.95);
+}
+.metricsStatus--warn {
+  background: rgba(251, 191, 36, 0.95);
+}
+.metricsStatus--bad {
+  background: rgba(251, 113, 133, 0.95);
+}
+.metricsStatus--neutral {
+  background: rgba(148, 163, 184, 0.85);
+}
+
+.metricsControls {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.metricsControl {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.metricsSelect {
+  background: rgba(15, 23, 42, 0.75);
+  color: #e7eaf0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+.metricsButton {
+  background: rgba(97, 218, 251, 0.14);
+  color: #e7eaf0;
+  border: 1px solid rgba(97, 218, 251, 0.35);
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.metricsButton:hover {
+  background: rgba(97, 218, 251, 0.22);
+}
+
+.metricsToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.metricsPill {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(167, 139, 250, 0.14);
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  color: rgba(231, 234, 240, 0.9);
+}
+
+.metricsError {
+  margin-top: 8px;
+  color: rgba(251, 113, 133, 0.98);
+}
+
+.metricsChartsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .metricsChartsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.metricsCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.metricsChartSvg {
+  width: 100%;
+  height: 220px;
+}
+
+.metricsChartSvg line {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+}
+
+.metricsChartLabel {
+  fill: rgba(231, 234, 240, 0.7);
+  font-size: 12px;
+}
+
+.metricsLegend {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.metricsLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metricsLegendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(97, 218, 251, 0.85);
+}
+
+.metricsTableWrap {
+  margin-top: 10px;
+  overflow: auto;
+}
+
+.metricsTableEl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.metricsTableEl th,
+.metricsTableEl td {
+  padding: 10px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.metricsTableEl th {
+  color: rgba(231, 234, 240, 0.75);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  background: rgba(18, 26, 42, 0.95);
+}
+
+.metricsAveragesRow {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 520px) {
+  .metricsAveragesRow {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.metricsAvgItem {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.metricsAvgValue {
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.metricsSkeletonRow {
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
+  background-size: 200% 100%;
+  animation: metricsShimmer 1.4s ease-in-out infinite;
+  margin-top: 10px;
+}
+
+@keyframes metricsShimmer {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
