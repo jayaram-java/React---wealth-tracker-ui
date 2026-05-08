@@ -16,6 +16,7 @@ import PersistLastLocation from './features/login/components/PersistLastLocation
 import LandingRedirect from './features/login/components/LandingRedirect';
 import AdminRoute from './features/login/components/AdminRoute';
 import ServiceHealthDashboardContainer from './features/ServiceHealthDashboard/container/ServiceHealthDashboardContainer';
+import MetricsContainer from './features/Metrics/container/MetricsContainer';
 
 const AppRoutes = () => (
   <Routes>
@@ -90,6 +91,14 @@ const AppRoutes = () => (
       element={
         <AdminRoute>
           <ServiceHealthDashboardContainer />
+        </AdminRoute>
+      }
+    />
+    <Route
+      path="/metrics"
+      element={
+        <AdminRoute>
+          <MetricsContainer />
         </AdminRoute>
       }
     />

@@ -41,9 +41,9 @@ const WebsiteLinkContainer = () => {
     buildDefaultFormState(username)
   );
 
-  const authHeader = useMemo(() => {
+  const authHeader = useMemo<Record<string, string> | undefined>(() => {
     if (!accessToken) {
-      return {};
+      return undefined;
     }
     const prefix = tokenType ? tokenType : 'Bearer';
     return { Authorization: `${prefix} ${accessToken}` };

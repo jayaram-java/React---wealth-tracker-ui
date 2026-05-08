@@ -82,7 +82,8 @@ const FAQ_FUSE = new Fuse(
 );
 
 const matchRoute = (value: string) => {
-  let best: { score: number; index: number } | null = null;
+  let bestIndex: number | null = null;
+  let bestScore = 0;
   ALLOWED_ROUTES.forEach((route, index) => {
     let score = 0;
     route.keywords.forEach((keyword) => {
@@ -90,12 +91,13 @@ const matchRoute = (value: string) => {
         score += keyword.split(' ').length + 1;
       }
     });
-    if (score > 0 && (!best || score > best.score)) {
-      best = { score, index };
+    if (score > bestScore) {
+      bestScore = score;
+      bestIndex = index;
     }
   });
-  if (best) {
-    return ALLOWED_ROUTES[best.index];
+  if (bestIndex !== null && bestScore > 0) {
+    return ALLOWED_ROUTES[bestIndex];
   }
   const fuseMatch = ROUTE_FUSE.search(value, { limit: 1 })[0];
   if (fuseMatch && (fuseMatch.score ?? 1) <= 0.45) {

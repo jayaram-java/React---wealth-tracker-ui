@@ -30,9 +30,9 @@ const DashboardContainer = () => {
   const [isTrendsLoading, setIsTrendsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const authHeader = useMemo(() => {
+  const authHeader = useMemo<Record<string, string> | undefined>(() => {
     if (!accessToken) {
-      return {};
+      return undefined;
     }
     const prefix = tokenType ? tokenType : 'Bearer';
     return { Authorization: `${prefix} ${accessToken}` };

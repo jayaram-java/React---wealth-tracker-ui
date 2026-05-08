@@ -26,6 +26,7 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showWebsiteLinks = isAdmin || isUser;
   const showExpenseReport = isAdmin || isUser;
   const showServiceHealth = isAdmin;
+  const showMetrics = isAdmin;
 
   return (
     <header className="app-header">
@@ -150,6 +151,16 @@ const Header = ({ onLogout }: HeaderProps) => {
             }
           >
             Service Health
+          </NavLink>
+        ) : null}
+        {showMetrics ? (
+          <NavLink
+            to="/metrics"
+            className={({ isActive }) =>
+              `app-header__link${isActive ? ' active' : ''}`
+            }
+          >
+            Metrics
           </NavLink>
         ) : null}
       </nav>

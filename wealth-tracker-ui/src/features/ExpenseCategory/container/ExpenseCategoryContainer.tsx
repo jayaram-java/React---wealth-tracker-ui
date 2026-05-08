@@ -37,9 +37,9 @@ const ExpenseCategoryContainer = () => {
     buildDefaultFormState(username, null)
   );
 
-  const authHeader = useMemo(() => {
+  const authHeader = useMemo<Record<string, string> | undefined>(() => {
     if (!accessToken) {
-      return {};
+      return undefined;
     }
     const prefix = tokenType ? tokenType : 'Bearer';
     return { Authorization: `${prefix} ${accessToken}` };
