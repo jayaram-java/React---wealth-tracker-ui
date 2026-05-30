@@ -63,6 +63,10 @@
   font-family: inherit;
 }
 
+.website-link__grid input[type='text'] {
+  width: 100%;
+}
+
 .website-link__grid textarea {
   min-height: 70px;
   resize: vertical;

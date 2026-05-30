@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   deleteRequest,
@@ -26,11 +26,17 @@ const buildDefaultFormState = (username: string) => ({
   modifiedBy: username || '',
 });
 
+const compareCategoryNames = (left: WebsiteCategory, right: WebsiteCategory) =>
+  left.categoryName.localeCompare(right.categoryName, undefined, {
+    sensitivity: 'base',
+  });
+
 const WebsiteLinkContainer = () => {
   const navigate = useNavigate();
   const { accessToken, tokenType, logout, username } = useAuth();
   const [links, setLinks] = useState<WebsiteLink[]>([]);
   const [categories, setCategories] = useState<WebsiteCategory[]>([]);
+  const [categorySearch, setCategorySearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -49,7 +55,7 @@ const WebsiteLinkContainer = () => {
     return { Authorization: `${prefix} ${accessToken}` };
   }, [accessToken, tokenType]);
 
-  const fetchLinks = async () => {
+  const fetchLinks = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
@@ -65,15 +71,16 @@ const WebsiteLinkContainer = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [authHeader]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await getRequest<WebsiteCategory[]>(
         API_ENDPOINTS.website.categories,
         { headers: authHeader }
       );
-      setCategories(response);
+      const sortedCategories = [...response].sort(compareCategoryNames);
+      setCategories(sortedCategories);
       if (response.length > 0 && editingId === null) {
         const exists = response.some(
           (category) => String(category.id) === formState.categoryId
@@ -81,14 +88,14 @@ const WebsiteLinkContainer = () => {
         if (!exists) {
           setFormState((prev) => ({
             ...prev,
-            categoryId: String(response[0].id),
+            categoryId: String(sortedCategories[0].id),
           }));
         }
       }
     } catch {
       // Ignore category fetch failures; links can still load
     }
-  };
+  }, [authHeader, editingId, formState.categoryId]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -97,7 +104,7 @@ const WebsiteLinkContainer = () => {
     }
     fetchLinks();
     fetchCategories();
-  }, [accessToken, navigate]);
+  }, [accessToken, fetchCategories, fetchLinks, navigate]);
 
   useEffect(() => {
     setFormState((prev) => ({
@@ -256,6 +263,21 @@ const WebsiteLinkContainer = () => {
     setCurrentPage(1);
   };
 
+  const handleCategorySearchChange = (value: string) => {
+    setCategorySearch(value);
+  };
+
+  const filteredCategories = useMemo(() => {
+    const normalizedSearch = categorySearch.trim().toLowerCase();
+    if (!normalizedSearch) {
+      return categories;
+    }
+
+    return categories.filter((category) =>
+      category.categoryName.toLowerCase().includes(normalizedSearch)
+    );
+  }, [categorySearch, categories]);
+
   const handlePageChange = (page: number) => {
     const nextPage = Math.min(Math.max(1, page), totalPages);
     setCurrentPage(nextPage);
@@ -275,10 +297,12 @@ const WebsiteLinkContainer = () => {
     <WebsiteLinkPresenter
       links={pagedLinks}
       categories={categories}
+      filteredCategories={filteredCategories}
       isLoading={isLoading}
       errorMessage={errorMessage}
       formState={formState}
       isEditing={editingId !== null}
+      categorySearch={categorySearch}
       filterCategoryId={filterCategoryId}
       currentPage={currentPage}
       totalPages={totalPages}
@@ -287,6 +311,7 @@ const WebsiteLinkContainer = () => {
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
+      onCategorySearchChange={handleCategorySearchChange}
       onFilterChange={handleFilterChange}
       onPageChange={handlePageChange}
       onRefresh={handleRefresh}

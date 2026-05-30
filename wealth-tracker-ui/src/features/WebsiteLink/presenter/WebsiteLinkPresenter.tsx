@@ -7,6 +7,7 @@ import '../styles/WebsiteLink.css';
 interface WebsiteLinkPresenterProps {
   links: WebsiteLink[];
   categories: WebsiteCategory[];
+  filteredCategories: WebsiteCategory[];
   isLoading: boolean;
   errorMessage: string | null;
   formState: {
@@ -19,6 +20,7 @@ interface WebsiteLinkPresenterProps {
     modifiedBy: string;
   };
   isEditing: boolean;
+  categorySearch: string;
   filterCategoryId: string;
   currentPage: number;
   totalPages: number;
@@ -30,6 +32,7 @@ interface WebsiteLinkPresenterProps {
   onEdit: (link: WebsiteLink) => void;
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
+  onCategorySearchChange: (value: string) => void;
   onFilterChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onRefresh: () => void;
@@ -39,10 +42,12 @@ interface WebsiteLinkPresenterProps {
 const WebsiteLinkPresenter = ({
   links,
   categories,
+  filteredCategories,
   isLoading,
   errorMessage,
   formState,
   isEditing,
+  categorySearch,
   filterCategoryId,
   currentPage,
   totalPages,
@@ -51,6 +56,7 @@ const WebsiteLinkPresenter = ({
   onEdit,
   onDelete,
   onCancelEdit,
+  onCategorySearchChange,
   onFilterChange,
   onPageChange,
   onRefresh,
@@ -59,6 +65,37 @@ const WebsiteLinkPresenter = ({
   const categoryLookup = new Map(
     categories.map((category) => [category.id, category.categoryName])
   );
+  const selectedCategory = categories.find(
+    (category) => String(category.id) === formState.categoryId
+  );
+  const selectedCategoryInFilteredList = filteredCategories.some(
+    (category) => String(category.id) === formState.categoryId
+  );
+  const categoryOptions =
+    categories.length === 0 ? (
+      <option value="">No categories available</option>
+    ) : filteredCategories.length === 0 ? (
+      <option value="">No categories found</option>
+    ) : !selectedCategoryInFilteredList && selectedCategory ? (
+      <>
+        <option value={selectedCategory.id}>
+          {selectedCategory.categoryName}
+        </option>
+        {filteredCategories
+          .filter((category) => category.id !== selectedCategory.id)
+          .map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.categoryName}
+            </option>
+          ))}
+      </>
+    ) : (
+      filteredCategories.map((category) => (
+        <option key={category.id} value={category.id}>
+          {category.categoryName}
+        </option>
+      ))
+    );
 
   return (
     <div className="website-link">
@@ -109,21 +146,20 @@ const WebsiteLinkPresenter = ({
             </label>
             <label>
               Category
+              <input
+                type="text"
+                value={categorySearch}
+                onChange={(event) => onCategorySearchChange(event.target.value)}
+                placeholder="Search categories"
+                autoComplete="off"
+              />
               <select
                 value={formState.categoryId}
                 onChange={(event) => onChange('categoryId', event.target.value)}
                 required
                 disabled={categories.length === 0}
               >
-                {categories.length === 0 ? (
-                  <option value="">No categories available</option>
-                ) : (
-                  categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.categoryName}
-                    </option>
-                  ))
-                )}
+                {categoryOptions}
               </select>
             </label>
             <label>
