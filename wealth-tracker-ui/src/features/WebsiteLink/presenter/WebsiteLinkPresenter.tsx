@@ -2,6 +2,7 @@ import type { FormEvent } from 'react';
 import Header from '../../../components/Header';
 import type { WebsiteLink } from '../types/WebsiteLinkTypes';
 import type { WebsiteCategory } from '../../WebsiteCategory/types/WebsiteCategoryTypes';
+import { getDisplayUrl } from '../../../utils/url';
 import '../styles/WebsiteLink.css';
 
 interface WebsiteLinkPresenterProps {
@@ -250,16 +251,16 @@ const WebsiteLinkPresenter = ({
             ) : (
               links.map((link) => (
                 <div key={link.id} className="website-link__row">
-                  <span>
-                    <a
-                      className="website-link__url"
-                      href={link.websiteLink}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {link.websiteLink}
-                    </a>
-                  </span>
+                  <a
+                    className="website-link__url"
+                    href={link.websiteLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    title={link.websiteLink}
+                    aria-label={`Open ${link.websiteLink}`}
+                  >
+                    {getDisplayUrl(link.websiteLink)}
+                  </a>
                   <span>{link.description}</span>
                   <span>{categoryLookup.get(link.categoryId) ?? '—'}</span>
                   <span className="website-link__row-actions">
