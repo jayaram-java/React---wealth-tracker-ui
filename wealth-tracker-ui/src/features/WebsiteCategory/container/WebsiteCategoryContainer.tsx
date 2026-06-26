@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   deleteRequest,
   getRequest,
@@ -14,6 +13,7 @@ import type {
   WebsiteCategoryUpdatePayload,
 } from '../types/WebsiteCategoryTypes';
 import { useAuth } from '../../login/context/useAuth';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 const buildDefaultFormState = (username: string) => ({
   categoryName: '',
@@ -24,8 +24,8 @@ const buildDefaultFormState = (username: string) => ({
 });
 
 const WebsiteCategoryContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout, username } = useAuth();
+  const { accessToken, tokenType, username } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [categories, setCategories] = useState<WebsiteCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -62,11 +62,11 @@ const WebsiteCategoryContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchCategories();
-  }, [accessToken, navigate]);
+  }, [accessToken, navigateTo]);
 
   useEffect(() => {
     setFormState((prev) => ({
@@ -189,11 +189,6 @@ const WebsiteCategoryContainer = () => {
     resetForm();
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <WebsiteCategoryPresenter
       categories={categories}
@@ -207,7 +202,6 @@ const WebsiteCategoryContainer = () => {
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
       onRefresh={fetchCategories}
-      onLogout={handleLogout}
     />
   );
 };

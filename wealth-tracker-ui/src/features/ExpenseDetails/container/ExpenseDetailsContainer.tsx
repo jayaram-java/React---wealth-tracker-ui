@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   deleteRequest,
   getRequest,
@@ -17,6 +16,7 @@ import type {
   ExpenseStatus,
 } from '../types/ExpenseDetailsTypes';
 import { decodeJwtPayload } from '../../../utils/jwt';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 interface JwtPayload {
   userId?: number;
@@ -40,8 +40,8 @@ const buildDefaultFormState = (username: string, userId: number | null) => ({
 });
 
 const ExpenseDetailsContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout, username } = useAuth();
+  const { accessToken, tokenType, username } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [expenseDetails, setExpenseDetails] = useState<ExpenseDetails[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -112,12 +112,12 @@ const ExpenseDetailsContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchExpenseDetails();
     fetchCategories();
-  }, [accessToken, navigate]);
+  }, [accessToken, navigateTo]);
 
   const handleChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -283,11 +283,6 @@ const ExpenseDetailsContainer = () => {
     resetForm();
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const handleRefresh = () => {
     fetchExpenseDetails();
     fetchCategories();
@@ -310,7 +305,6 @@ const ExpenseDetailsContainer = () => {
       onCancelEdit={handleCancelEdit}
       onPageChange={handlePageChange}
       onRefresh={handleRefresh}
-      onLogout={handleLogout}
     />
   );
 };

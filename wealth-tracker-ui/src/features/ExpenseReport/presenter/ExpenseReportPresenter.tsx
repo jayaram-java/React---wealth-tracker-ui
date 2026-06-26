@@ -1,4 +1,3 @@
-import Header from '../../../components/Header';
 import type { ExpenseCategory } from '../../ExpenseCategory/types/ExpenseCategoryTypes';
 import type {
   ExpenseReportFilters,
@@ -33,7 +32,6 @@ interface ExpenseReportPresenterProps {
   onEmailBodyChange: (value: string) => void;
   onSortChange: (field: ExpenseReportSortField) => void;
   onPageChange: (page: number) => void;
-  onLogout: () => void;
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-IN', {
@@ -92,12 +90,9 @@ const ExpenseReportPresenter = ({
   onEmailBodyChange,
   onSortChange,
   onPageChange,
-  onLogout,
 }: ExpenseReportPresenterProps) => {
   return (
-    <div className="expense-report">
-      <Header onLogout={onLogout} />
-
+    <div className="expense-report" data-testid="expense-report-page">
       <section className="expense-report__hero">
         <div>
           <p className="expense-report__eyebrow">Report Center</p>
@@ -106,16 +101,17 @@ const ExpenseReportPresenter = ({
             Filter by date and category to analyze your spending quickly.
           </p>
         </div>
-        <button className="ghost-button" onClick={onRefresh}>
+        <button className="ghost-button" onClick={onRefresh} data-testid="expense-report-refresh">
           Refresh
         </button>
       </section>
 
-      <section className="expense-report__card expense-report__filters">
+      <section className="expense-report__card expense-report__filters" data-testid="expense-report-filters">
         <label>
           From Date
           <input
             type="date"
+            data-testid="expense-report-start-date"
             value={filters.startDate}
             onChange={(event) => onFilterChange('startDate', event.target.value)}
           />
@@ -125,6 +121,7 @@ const ExpenseReportPresenter = ({
           To Date
           <input
             type="date"
+            data-testid="expense-report-end-date"
             value={filters.endDate}
             onChange={(event) => onFilterChange('endDate', event.target.value)}
           />
@@ -133,6 +130,7 @@ const ExpenseReportPresenter = ({
         <label>
           Category
           <select
+            data-testid="expense-report-category"
             value={filters.categoryId}
             onChange={(event) => onFilterChange('categoryId', event.target.value)}
           >
@@ -149,6 +147,7 @@ const ExpenseReportPresenter = ({
           Email Subject
           <input
             type="text"
+            data-testid="expense-report-subject"
             value={emailSubject}
             onChange={(event) => onEmailSubjectChange(event.target.value)}
             placeholder="My expense report"
@@ -158,6 +157,7 @@ const ExpenseReportPresenter = ({
         <label className="expense-report__email-body">
           Email Body
           <textarea
+            data-testid="expense-report-body"
             value={emailBody}
             onChange={(event) => onEmailBodyChange(event.target.value)}
             rows={2}
@@ -166,7 +166,7 @@ const ExpenseReportPresenter = ({
         </label>
 
         <div className="expense-report__filter-actions">
-          <button className="primary-button" onClick={onApplyFilters}>
+          <button className="primary-button" onClick={onApplyFilters} data-testid="expense-report-apply">
             Apply Filters
           </button>
           <button
@@ -174,6 +174,7 @@ const ExpenseReportPresenter = ({
             className="ghost-button"
             onClick={onSendEmail}
             disabled={isEmailSending}
+            data-testid="expense-report-send-email"
           >
             {isEmailSending ? 'Sending Email...' : 'Send Email'}
           </button>
@@ -182,6 +183,7 @@ const ExpenseReportPresenter = ({
             className="ghost-button"
             onClick={onViewPdf}
             disabled={isPdfLoading}
+            data-testid="expense-report-view-pdf"
           >
             {isPdfLoading ? 'Preparing PDF...' : 'View PDF'}
           </button>
@@ -190,6 +192,7 @@ const ExpenseReportPresenter = ({
             className="ghost-button"
             onClick={onDownloadPdf}
             disabled={isPdfLoading}
+            data-testid="expense-report-download-pdf"
           >
             {isPdfLoading ? 'Preparing PDF...' : 'Download PDF'}
           </button>
@@ -197,9 +200,15 @@ const ExpenseReportPresenter = ({
       </section>
 
       {successMessage ? (
-        <p className="expense-report__success">{successMessage}</p>
+        <p className="expense-report__success" data-testid="expense-report-success">
+          {successMessage}
+        </p>
       ) : null}
-      {errorMessage ? <p className="expense-report__error">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p className="expense-report__error" data-testid="expense-report-error">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <section className="expense-report__card expense-report__table-card">
         <div className="expense-report__table-header">
@@ -224,7 +233,7 @@ const ExpenseReportPresenter = ({
           </button>
         </div>
 
-        <div className="expense-report__table">
+        <div className="expense-report__table" data-testid="expense-report-table">
           <div className="expense-report__row expense-report__row--head">
             <span>Expense Name</span>
             <span>Expense Date</span>

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import { useAuth } from '../../login/context/useAuth';
@@ -17,6 +16,7 @@ import type {
   ExpenseReportSortField,
   ExpenseReportSortOrder,
 } from '../types/ExpenseReportTypes';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 interface JwtPayload {
   userId?: number;
@@ -61,8 +61,8 @@ const buildDefaultFilters = (): ExpenseReportFilters => {
 };
 
 const ExpenseReportContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout } = useAuth();
+  const { accessToken, tokenType } = useAuth();
+  const { navigateTo } = useAppNavigation();
 
   const initialFilters = useMemo(() => buildDefaultFilters(), []);
 
@@ -166,13 +166,13 @@ const ExpenseReportContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
 
     fetchCategories();
     fetchReportData(filters);
-  }, [accessToken, fetchCategories, fetchReportData, navigate]);
+  }, [accessToken, fetchCategories, fetchReportData, navigateTo]);
 
   useEffect(() => {
     if (!isEmailSubjectDirty) {
@@ -406,11 +406,6 @@ const ExpenseReportContainer = () => {
     setCurrentPage(nextPage);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const handleEmailSubjectChange = (value: string) => {
     setIsEmailSubjectDirty(true);
     setEmailSubject(value);
@@ -447,7 +442,6 @@ const ExpenseReportContainer = () => {
       onEmailBodyChange={handleEmailBodyChange}
       onSortChange={handleSortChange}
       onPageChange={handlePageChange}
-      onLogout={handleLogout}
     />
   );
 };

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../login/context/useAuth';
 import { decodeJwtPayload } from '../../../utils/jwt';
 import MetricsPresenter from '../presenter/MetricsPresenter';
@@ -9,6 +8,7 @@ import { calculatePercentage, formatBytes, mean, nowMs } from '../utils/metricsH
 import { parsePrometheusText, labelsToKey } from '../utils/prometheusParser';
 import type { Series } from '../utils/timeSeries';
 import { upsertSeriesPoint } from '../utils/timeSeries';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 interface JwtPayload {
   roles?: string[] | string;
@@ -55,8 +55,8 @@ const MAX_AGE_MS_24H = 24 * 60 * 60 * 1000;
 const REFRESH_MS = 10_000;
 
 const MetricsContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout } = useAuth();
+  const { accessToken, tokenType } = useAuth();
+  const { navigateTo } = useAppNavigation();
 
   const [service, setService] = useState<ServiceKey>('authService');
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -224,12 +224,12 @@ const MetricsContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchOnce();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, service, navigate]);
+  }, [accessToken, service, navigateTo]);
 
   useEffect(() => {
     if (!autoRefresh) {
@@ -250,11 +250,6 @@ const MetricsContainer = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRefresh, service, accessToken]);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   const handleServiceChange = (next: ServiceKey) => {
     setService(next);
@@ -297,7 +292,6 @@ const MetricsContainer = () => {
 
   return (
     <MetricsPresenter
-      onLogout={handleLogout}
       adminAllowed={adminAllowed}
       service={service}
       serviceLabel={toServiceLabel(service)}

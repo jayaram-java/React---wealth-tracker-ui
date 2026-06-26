@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import Header from '../../../components/Header';
 import type { WebsiteCategory } from '../types/WebsiteCategoryTypes';
 import '../styles/WebsiteCategory.css';
 
@@ -21,7 +20,6 @@ interface WebsiteCategoryPresenterProps {
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
   onRefresh: () => void;
-  onLogout: () => void;
 }
 
 const WebsiteCategoryPresenter = ({
@@ -36,12 +34,9 @@ const WebsiteCategoryPresenter = ({
   onDelete,
   onCancelEdit,
   onRefresh,
-  onLogout,
 }: WebsiteCategoryPresenterProps) => {
   return (
     <div className="website-category">
-      <Header onLogout={onLogout} />
-
       <section className="website-category__hero">
         <div>
           <p className="website-category__eyebrow">Website Center</p>

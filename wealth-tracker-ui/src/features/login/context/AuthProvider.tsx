@@ -1,11 +1,23 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AuthPayload, LoginResponse } from '../types/LoginTypes';
 import { clearStoredAuth, readStoredAuth, writeStoredAuth } from './authStorage';
 import { AuthContext, type AuthContextValue } from './AuthContext';
+import { isAuthPayloadValid } from './authSession';
+import { setSessionTimeoutHandler } from '../../../serviceconfigs/AxiosAPI';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [auth, setAuth] = useState<AuthPayload | null>(() => readStoredAuth());
   const isHydrated = typeof window !== 'undefined';
+
+  const refreshAuth = () => {
+    setAuth((current) => {
+      if (isAuthPayloadValid(current)) {
+        return current;
+      }
+      clearStoredAuth();
+      return null;
+    });
+  };
 
   const login = (payload: LoginResponse, username: string) => {
     const nextAuth: AuthPayload = { ...payload, username };
@@ -18,6 +30,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     clearStoredAuth();
   };
 
+  useEffect(() => {
+    setSessionTimeoutHandler(logout);
+    return () => setSessionTimeoutHandler(null);
+  }, []);
+
+  useEffect(() => {
+    if (!auth) {
+      return;
+    }
+
+    if (!isAuthPayloadValid(auth)) {
+      logout();
+      return;
+    }
+
+    writeStoredAuth(auth);
+  }, [auth]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       accessToken: auth?.accessToken ?? '',
@@ -28,6 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isHydrated,
       login,
       logout,
+      refreshAuth,
     }),
     [auth, isHydrated]
   );

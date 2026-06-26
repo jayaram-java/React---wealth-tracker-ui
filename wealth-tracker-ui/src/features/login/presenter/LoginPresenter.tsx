@@ -20,7 +20,7 @@ const LoginPresenter = ({
   onSubmit,
 }: LoginPresenterProps) => {
   return (
-    <div className="login-page">
+    <div className="login-page" data-testid="login-page">
       <div className="login-hero">
         <div className="login-hero__brand">Wealth Tracker</div>
         <h1>Take control of every rupee.</h1>
@@ -51,11 +51,12 @@ const LoginPresenter = ({
           Sign in with your Wealth Tracker credentials.
         </p>
 
-        <form className="login-form" onSubmit={onSubmit}>
+        <form className="login-form" onSubmit={onSubmit} data-testid="login-form">
           <label>
             Username
             <input
               type="text"
+              data-testid="login-username"
               value={username}
               onChange={(event) => onUsernameChange(event.target.value)}
               placeholder="jram.user"
@@ -67,6 +68,7 @@ const LoginPresenter = ({
             Password
             <input
               type="password"
+              data-testid="login-password"
               value={password}
               onChange={(event) => onPasswordChange(event.target.value)}
               placeholder="Password@123"
@@ -76,12 +78,12 @@ const LoginPresenter = ({
           </label>
 
           {errorMessage ? (
-            <div className="login-form__error" role="alert">
+            <div className="login-form__error" role="alert" data-testid="login-error">
               {errorMessage}
             </div>
           ) : null}
 
-          <button type="submit" disabled={isLoading}>
+          <button type="submit" disabled={isLoading} data-testid="login-submit">
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>

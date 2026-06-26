@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import Header from '../../../components/Header';
 import type { ChecklistCategory } from '../types/ChecklistCategoryTypes';
 import '../styles/ChecklistCategory.css';
 
@@ -25,7 +24,6 @@ interface ChecklistCategoryPresenterProps {
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
   onRefresh: () => void;
-  onLogout: () => void;
 }
 
 const ChecklistCategoryPresenter = ({
@@ -40,12 +38,9 @@ const ChecklistCategoryPresenter = ({
   onDelete,
   onCancelEdit,
   onRefresh,
-  onLogout,
 }: ChecklistCategoryPresenterProps) => {
   return (
     <div className="checklist-category">
-      <Header onLogout={onLogout} />
-
       <section className="checklist-category__hero">
         <div>
           <p className="checklist-category__eyebrow">Checklist Center</p>

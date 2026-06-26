@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   deleteRequest,
   getRequest,
@@ -17,6 +16,7 @@ import type {
 import type { ChecklistCategory } from '../../ChecklistCategory/types/ChecklistCategoryTypes';
 import { useAuth } from '../../login/context/useAuth';
 import { decodeJwtPayload } from '../../../utils/jwt';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 interface JwtPayload {
   userId?: number;
@@ -35,8 +35,8 @@ const buildDefaultFormState = (username: string, userId: number | null) => ({
 });
 
 const ChecklistContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout, username } = useAuth();
+  const { accessToken, tokenType, username } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [items, setItems] = useState<ChecklistItem[]>([]);
   const [categories, setCategories] = useState<ChecklistCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,12 +105,12 @@ const ChecklistContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchItems();
     fetchCategories();
-  }, [accessToken, navigate]);
+  }, [accessToken, navigateTo]);
 
   useEffect(() => {
     setFormState((prev) => ({
@@ -262,11 +262,6 @@ const ChecklistContainer = () => {
     resetForm();
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const handleRefresh = () => {
     fetchItems();
     fetchCategories();
@@ -286,7 +281,6 @@ const ChecklistContainer = () => {
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
       onRefresh={handleRefresh}
-      onLogout={handleLogout}
     />
   );
 };

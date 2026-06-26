@@ -4,7 +4,7 @@ import type { AuthState, LoginResponse } from '../types/LoginTypes';
 export interface AuthContextValue extends AuthState {
   login: (payload: LoginResponse, username: string) => void;
   logout: () => void;
+  refreshAuth: () => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-

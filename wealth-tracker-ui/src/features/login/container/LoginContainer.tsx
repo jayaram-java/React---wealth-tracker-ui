@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, type Location } from 'react-router-dom';
 import { postRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import LoginPresenter from '../presenter/LoginPresenter';
 import type { LoginRequest, LoginResponse } from '../types/LoginTypes';
 import { useAuth } from '../context/useAuth';
+import { ROUTES } from '../../../routes/routePaths';
 
 const LoginContainer = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,11 +29,8 @@ const LoginContainer = () => {
       );
 
       login(response, username);
-      const state = location.state as { from?: { pathname?: string; search?: string } } | null;
-      const nextPath = state?.from?.pathname
-        ? `${state.from.pathname}${state.from.search ?? ''}`
-        : '/dashboard';
-      navigate(nextPath, { replace: true });
+      const from = (location.state as { from?: Location } | null)?.from?.pathname;
+      navigate(from ?? ROUTES.dashboard, { replace: true });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to login. Try again.';

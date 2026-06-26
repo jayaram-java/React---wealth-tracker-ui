@@ -1,4 +1,3 @@
-import Header from '../../../components/Header';
 import DashboardLayout from '../components/DashboardLayout';
 import SummaryCard from '../components/SummaryCard';
 import MetricsTable from '../components/MetricsTable';
@@ -10,7 +9,6 @@ import type { MetricsAverages, MetricsSummary, MetricsTableRow, ServiceKey } fro
 import type { Series } from '../utils/timeSeries';
 
 interface MetricsPresenterProps {
-  onLogout: () => void;
   adminAllowed: boolean;
   service: ServiceKey;
   serviceLabel: string;
@@ -29,7 +27,6 @@ interface MetricsPresenterProps {
 }
 
 const MetricsPresenter = ({
-  onLogout,
   adminAllowed,
   service,
   serviceLabel,
@@ -46,8 +43,6 @@ const MetricsPresenter = ({
   diskSeries,
   averages,
 }: MetricsPresenterProps) => {
-  const headerLeft = <Header onLogout={onLogout} />;
-
   const headerRight = (
     <ServiceControls
       service={service}
@@ -61,7 +56,6 @@ const MetricsPresenter = ({
   if (!adminAllowed) {
     return (
       <div className="metricsPage">
-        {headerLeft}
         <div className="metricsCard metricsCard--padded metricsError">
           Access denied. This page is available only for admin users.
         </div>
@@ -71,7 +65,7 @@ const MetricsPresenter = ({
 
   return (
     <DashboardLayout
-      headerLeft={headerLeft}
+      headerLeft={null}
       headerRight={headerRight}
       summaryCards={
         <div className="metricsSummaryGrid">
@@ -113,4 +107,3 @@ const MetricsPresenter = ({
 };
 
 export default MetricsPresenter;
-

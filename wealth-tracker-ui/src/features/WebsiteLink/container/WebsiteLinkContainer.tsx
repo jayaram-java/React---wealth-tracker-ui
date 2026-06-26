@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   deleteRequest,
   getRequest,
@@ -8,6 +7,7 @@ import {
 } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import { useAuth } from '../../login/context/useAuth';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 import WebsiteLinkPresenter from '../presenter/WebsiteLinkPresenter';
 import type {
   WebsiteLink,
@@ -32,8 +32,8 @@ const compareCategoryNames = (left: WebsiteCategory, right: WebsiteCategory) =>
   });
 
 const WebsiteLinkContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout, username } = useAuth();
+  const { accessToken, tokenType, username } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [links, setLinks] = useState<WebsiteLink[]>([]);
   const [categories, setCategories] = useState<WebsiteCategory[]>([]);
   const [categorySearch, setCategorySearch] = useState('');
@@ -99,12 +99,12 @@ const WebsiteLinkContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchLinks();
     fetchCategories();
-  }, [accessToken, fetchCategories, fetchLinks, navigate]);
+  }, [accessToken, fetchCategories, fetchLinks, navigateTo]);
 
   useEffect(() => {
     setFormState((prev) => ({
@@ -283,11 +283,6 @@ const WebsiteLinkContainer = () => {
     setCurrentPage(nextPage);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const handleRefresh = () => {
     fetchLinks();
     fetchCategories();
@@ -315,7 +310,6 @@ const WebsiteLinkContainer = () => {
       onFilterChange={handleFilterChange}
       onPageChange={handlePageChange}
       onRefresh={handleRefresh}
-      onLogout={handleLogout}
     />
   );
 };

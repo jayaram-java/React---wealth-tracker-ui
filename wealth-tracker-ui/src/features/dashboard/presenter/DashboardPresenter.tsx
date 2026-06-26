@@ -1,11 +1,9 @@
-﻿import Header from '../../../components/Header';
 import '../styles/dashboard.css';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';
 import type { ExpenseReportTrends } from '../types/ExpenseTrendTypes';
 import ExpenseChart from '../view/ExpenseChart';
 
 interface DashboardPresenterProps {
-  onLogout: () => void;
   isLoading: boolean;
   errorMessage: string | null;
   monthSummary: ExpenseReportSummary | null;
@@ -15,7 +13,6 @@ interface DashboardPresenterProps {
 }
 
 const DashboardPresenter = ({
-  onLogout,
   isLoading,
   errorMessage,
   monthSummary,
@@ -99,8 +96,6 @@ const DashboardPresenter = ({
 
   return (
     <div className="dashboard">
-      <Header onLogout={onLogout} />
-
       <header className="dashboard__header">
         <div>
           <p className="dashboard__eyebrow">Wealth Tracker</p>
@@ -228,9 +223,7 @@ const DashboardPresenter = ({
       <section className="dashboard__panel dashboard__panel--stack">
         <div>
           <h2>Category-wise expenses</h2>
-          <p>
-            A breakdown of your total expenses by category.
-          </p>
+          <p>A breakdown of your total expenses by category.</p>
         </div>
         <div className="dashboard__categories">
           {categories.length === 0 && (

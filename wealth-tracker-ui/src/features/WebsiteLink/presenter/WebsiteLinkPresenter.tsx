@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import Header from '../../../components/Header';
 import type { WebsiteLink } from '../types/WebsiteLinkTypes';
 import type { WebsiteCategory } from '../../WebsiteCategory/types/WebsiteCategoryTypes';
 import { getDisplayUrl } from '../../../utils/url';
@@ -37,7 +36,6 @@ interface WebsiteLinkPresenterProps {
   onFilterChange: (value: string) => void;
   onPageChange: (page: number) => void;
   onRefresh: () => void;
-  onLogout: () => void;
 }
 
 const WebsiteLinkPresenter = ({
@@ -61,7 +59,6 @@ const WebsiteLinkPresenter = ({
   onFilterChange,
   onPageChange,
   onRefresh,
-  onLogout,
 }: WebsiteLinkPresenterProps) => {
   const categoryLookup = new Map(
     categories.map((category) => [category.id, category.categoryName])
@@ -99,9 +96,7 @@ const WebsiteLinkPresenter = ({
     );
 
   return (
-    <div className="website-link">
-      <Header onLogout={onLogout} />
-
+    <div className="website-link" data-testid="website-link-page">
       <section className="website-link__hero">
         <div>
           <p className="website-link__eyebrow">Website Center</p>
@@ -110,19 +105,20 @@ const WebsiteLinkPresenter = ({
             Add and manage links grouped by website categories.
           </p>
         </div>
-        <button className="ghost-button" onClick={onRefresh}>
+        <button className="ghost-button" onClick={onRefresh} data-testid="website-link-refresh">
           Refresh
         </button>
       </section>
 
       <section className="website-link__layout">
-        <form className="website-link__card" onSubmit={onSubmit}>
+        <form className="website-link__card" onSubmit={onSubmit} data-testid="website-link-form">
           <h2>{isEditing ? 'Update Link' : 'Create Link'}</h2>
           <div className="website-link__grid">
             <label>
               Website Link
               <input
                 type="url"
+                data-testid="website-link-url"
                 value={formState.websiteLink}
                 onChange={(event) => onChange('websiteLink', event.target.value)}
                 required
@@ -132,6 +128,7 @@ const WebsiteLinkPresenter = ({
               Description
               <input
                 type="text"
+                data-testid="website-link-description"
                 value={formState.description}
                 onChange={(event) => onChange('description', event.target.value)}
                 required
@@ -140,6 +137,7 @@ const WebsiteLinkPresenter = ({
             <label>
               Remarks
               <textarea
+                data-testid="website-link-remarks"
                 value={formState.remarks}
                 onChange={(event) => onChange('remarks', event.target.value)}
                 required
@@ -149,12 +147,14 @@ const WebsiteLinkPresenter = ({
               Category
               <input
                 type="text"
+                data-testid="website-link-category-search"
                 value={categorySearch}
                 onChange={(event) => onCategorySearchChange(event.target.value)}
                 placeholder="Search categories"
                 autoComplete="off"
               />
               <select
+                data-testid="website-link-category"
                 value={formState.categoryId}
                 onChange={(event) => onChange('categoryId', event.target.value)}
                 required
@@ -166,6 +166,7 @@ const WebsiteLinkPresenter = ({
             <label>
               Active
               <select
+                data-testid="website-link-active"
                 value={String(formState.isActive)}
                 onChange={(event) => onChange('isActive', event.target.value)}
               >
@@ -177,6 +178,7 @@ const WebsiteLinkPresenter = ({
               Created By
               <input
                 type="text"
+                data-testid="website-link-created-by"
                 value={formState.createdBy}
                 onChange={(event) => onChange('createdBy', event.target.value)}
                 required
@@ -187,6 +189,7 @@ const WebsiteLinkPresenter = ({
               Modified By
               <input
                 type="text"
+                data-testid="website-link-modified-by"
                 value={formState.modifiedBy}
                 onChange={(event) => onChange('modifiedBy', event.target.value)}
                 required={isEditing}
@@ -195,7 +198,7 @@ const WebsiteLinkPresenter = ({
             </label>
           </div>
           <div className="website-link__actions">
-            <button className="primary-button" type="submit" disabled={isLoading}>
+            <button className="primary-button" type="submit" disabled={isLoading} data-testid="website-link-submit">
               {isEditing ? 'Update Link' : 'Create Link'}
             </button>
             {isEditing ? (
@@ -203,6 +206,7 @@ const WebsiteLinkPresenter = ({
                 className="ghost-button"
                 type="button"
                 onClick={onCancelEdit}
+                data-testid="website-link-cancel"
               >
                 Cancel
               </button>
@@ -237,7 +241,7 @@ const WebsiteLinkPresenter = ({
               {isLoading ? <span>Loading...</span> : null}
             </div>
           </div>
-          <div className="website-link__table">
+          <div className="website-link__table" data-testid="website-link-table">
             <div className="website-link__row website-link__row--head">
               <span>Website Link</span>
               <span>Description</span>
@@ -268,6 +272,7 @@ const WebsiteLinkPresenter = ({
                       type="button"
                       className="link-button"
                       onClick={() => onEdit(link)}
+                      data-testid={`website-link-edit-${link.id}`}
                     >
                       Edit
                     </button>
@@ -275,6 +280,7 @@ const WebsiteLinkPresenter = ({
                       type="button"
                       className="link-button link-button--danger"
                       onClick={() => onDelete(link.id)}
+                      data-testid={`website-link-delete-${link.id}`}
                     >
                       Delete
                     </button>

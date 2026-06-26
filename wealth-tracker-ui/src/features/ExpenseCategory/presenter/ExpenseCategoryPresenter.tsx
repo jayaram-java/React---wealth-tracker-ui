@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import Header from '../../../components/Header';
 import type {
   ExpenseCategory,
   ExpenseCategoryStatus,
@@ -26,7 +25,6 @@ interface ExpenseCategoryPresenterProps {
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
   onRefresh: () => void;
-  onLogout: () => void;
 }
 
 const ExpenseCategoryPresenter = ({
@@ -41,12 +39,9 @@ const ExpenseCategoryPresenter = ({
   onDelete,
   onCancelEdit,
   onRefresh,
-  onLogout,
 }: ExpenseCategoryPresenterProps) => {
   return (
     <div className="expense-category">
-      <Header onLogout={onLogout} />
-
       <section className="expense-category__hero">
         <div>
           <p className="expense-category__eyebrow">Expense Center</p>

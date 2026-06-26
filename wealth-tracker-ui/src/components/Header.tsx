@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom';
 import './Header.css';
 import { useAuth } from '../features/login/context/useAuth';
 import { decodeJwtPayload } from '../utils/jwt';
+import { useAppNavigation } from '../context/AppNavigationContext';
 
 interface HeaderProps {
   onLogout?: () => void;
@@ -9,6 +9,7 @@ interface HeaderProps {
 
 const Header = ({ onLogout }: HeaderProps) => {
   const { accessToken } = useAuth();
+  const { currentScreen, navigateTo } = useAppNavigation();
 
   const payload = accessToken
     ? decodeJwtPayload<{ roles?: string[] }>(accessToken)
@@ -27,26 +28,27 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showExpenseReport = isAdmin || isUser;
   const showServiceHealth = isAdmin;
   const showMetrics = isAdmin;
+  const isActive = (screen: typeof currentScreen) => currentScreen === screen;
 
   return (
-    <header className="app-header">
+    <header className="app-header" data-testid="app-header">
       <div className="app-header__brand">
         <span className="app-header__eyebrow">Wealth Tracker</span>
         <h2>Personal Finance Hub</h2>
       </div>
       <nav className="app-header__nav">
         {showDashboard ? (
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
+          <button
+            type="button"
+            onClick={() => navigateTo('dashboard')}
+            className={`app-header__link${isActive('dashboard') ? ' active' : ''}`}
+            data-testid="nav-dashboard"
           >
             Dashboard
-          </NavLink>
+          </button>
         ) : null}
         <details className="app-header__dropdown">
-          <summary className="app-header__link app-header__summary">
+          <summary className="app-header__link app-header__summary" data-testid="nav-manage">
             Manage
             <span className="app-header__chevron">v</span>
           </summary>
@@ -54,76 +56,76 @@ const Header = ({ onLogout }: HeaderProps) => {
             <div className="app-header__menu-section">
               <span className="app-header__menu-title">Expenses</span>
               {showExpenseDetails ? (
-                <NavLink
-                  to="/expense-details"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('expense-details')}
+                  className={`app-header__menu-link${isActive('expense-details') ? ' active' : ''}`}
+                  data-testid="nav-expenses"
                 >
                   Expenses
-                </NavLink>
+                </button>
               ) : null}
               {showExpenseCategories ? (
-                <NavLink
-                  to="/expense-categories"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('expense-categories')}
+                  className={`app-header__menu-link${isActive('expense-categories') ? ' active' : ''}`}
+                  data-testid="nav-expense-categories"
                 >
                   Categories
-                </NavLink>
+                </button>
               ) : null}
             </div>
             <div className="app-header__menu-section">
               <span className="app-header__menu-title">Checklist</span>
               {showChecklists ? (
-                <NavLink
-                  to="/checklists"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('checklists')}
+                  className={`app-header__menu-link${isActive('checklists') ? ' active' : ''}`}
+                  data-testid="nav-checklists"
                 >
                   Checklists
-                </NavLink>
+                </button>
               ) : null}
               {showChecklistCategories ? (
-                <NavLink
-                  to="/checklist-categories"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('checklist-categories')}
+                  className={`app-header__menu-link${isActive('checklist-categories') ? ' active' : ''}`}
+                  data-testid="nav-checklist-categories"
                 >
                   Categories
-                </NavLink>
+                </button>
               ) : null}
             </div>
             <div className="app-header__menu-section">
               <span className="app-header__menu-title">Resources</span>
               {showWebsiteLinks ? (
-                <NavLink
-                  to="/website-links"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('website-links')}
+                  className={`app-header__menu-link${isActive('website-links') ? ' active' : ''}`}
+                  data-testid="nav-website-links"
                 >
                   Links
-                </NavLink>
+                </button>
               ) : null}
               {showWebsiteCategories ? (
-                <NavLink
-                  to="/website-categories"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('website-categories')}
+                  className={`app-header__menu-link${isActive('website-categories') ? ' active' : ''}`}
+                  data-testid="nav-website-categories"
                 >
                   Categories
-                </NavLink>
+                </button>
               ) : null}
             </div>
           </div>
         </details>
         <details className="app-header__dropdown">
-          <summary className="app-header__link app-header__summary">
+          <summary className="app-header__link app-header__summary" data-testid="nav-report">
             Report
             <span className="app-header__chevron">v</span>
           </summary>
@@ -131,41 +133,41 @@ const Header = ({ onLogout }: HeaderProps) => {
             <div className="app-header__menu-section">
               <span className="app-header__menu-title">Expense</span>
               {showExpenseReport ? (
-                <NavLink
-                  to="/expense-reports"
-                  className={({ isActive }) =>
-                    `app-header__menu-link${isActive ? ' active' : ''}`
-                  }
+                <button
+                  type="button"
+                  onClick={() => navigateTo('expense-reports')}
+                  className={`app-header__menu-link${isActive('expense-reports') ? ' active' : ''}`}
+                  data-testid="nav-expense-report"
                 >
                   Expense
-                </NavLink>
+                </button>
               ) : null}
             </div>
           </div>
         </details>
         {showServiceHealth ? (
-          <NavLink
-            to="/service-health"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
+          <button
+            type="button"
+            onClick={() => navigateTo('service-health')}
+            className={`app-header__link${isActive('service-health') ? ' active' : ''}`}
+            data-testid="nav-service-health"
           >
             Service Health
-          </NavLink>
+          </button>
         ) : null}
         {showMetrics ? (
-          <NavLink
-            to="/metrics"
-            className={({ isActive }) =>
-              `app-header__link${isActive ? ' active' : ''}`
-            }
+          <button
+            type="button"
+            onClick={() => navigateTo('metrics')}
+            className={`app-header__link${isActive('metrics') ? ' active' : ''}`}
+            data-testid="nav-metrics"
           >
             Metrics
-          </NavLink>
+          </button>
         ) : null}
       </nav>
       {onLogout ? (
-        <button className="ghost-button" onClick={onLogout}>
+        <button className="ghost-button" onClick={onLogout} data-testid="logout-button">
           Sign out
         </button>
       ) : null}

@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
-const LAST_PATH_KEY = 'wealth_tracker_last_path';
+const LAST_SCREEN_KEY = 'wealth_tracker_last_screen';
 
 const PersistLastLocation = () => {
-  const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const { currentScreen } = useAppNavigation();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -15,14 +15,8 @@ const PersistLastLocation = () => {
     if (typeof window === 'undefined') {
       return;
     }
-    if (location.pathname === '/login') {
-      return;
-    }
-    window.sessionStorage.setItem(
-      LAST_PATH_KEY,
-      `${location.pathname}${location.search}`
-    );
-  }, [isAuthenticated, location.pathname, location.search]);
+    window.sessionStorage.setItem(LAST_SCREEN_KEY, currentScreen);
+  }, [currentScreen, isAuthenticated]);
 
   return null;
 };

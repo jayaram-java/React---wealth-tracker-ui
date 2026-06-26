@@ -1,4 +1,3 @@
-import Header from '../../../components/Header';
 import ServiceCard from '../components/ServiceCard';
 import type {
   ServiceDetailsState,
@@ -13,7 +12,6 @@ interface ServiceHealthDashboardPresenterProps {
   isLoading: boolean;
   errorMessage: string | null;
   onRefresh: () => void;
-  onLogout: () => void;
   onToggleDetails: (serviceId: ServiceHealthSummary['id']) => void;
   onRetryServiceHealth: (serviceId: ServiceHealthSummary['id']) => void;
 }
@@ -25,14 +23,11 @@ const ServiceHealthDashboardPresenter = ({
   isLoading,
   errorMessage,
   onRefresh,
-  onLogout,
   onToggleDetails,
   onRetryServiceHealth,
 }: ServiceHealthDashboardPresenterProps) => {
   return (
     <div className="service-health">
-      <Header onLogout={onLogout} />
-
       <section className="service-health__hero">
         <div>
           <p className="service-health__eyebrow">Admin Tools</p>

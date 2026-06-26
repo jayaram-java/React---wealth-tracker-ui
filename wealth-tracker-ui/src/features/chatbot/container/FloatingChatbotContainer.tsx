@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../login/context/useAuth';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 import ChatbotContainer from './ChatbotContainer';
 
 const FloatingChatbotContainer = () => {
   const { isAuthenticated } = useAuth();
+  const { currentScreen } = useAppNavigation();
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
 
-  if (!isAuthenticated || location.pathname === '/login') {
+  if (!isAuthenticated || currentScreen === 'login') {
     return null;
   }
 

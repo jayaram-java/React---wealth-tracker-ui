@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import Header from '../../../components/Header';
 import type { ChecklistItem, ChecklistStatus } from '../types/ChecklistTypes';
 import type { ChecklistCategory } from '../../ChecklistCategory/types/ChecklistCategoryTypes';
 import '../styles/Checklist.css';
@@ -29,7 +28,6 @@ interface ChecklistPresenterProps {
   onDelete: (id: number) => void;
   onCancelEdit: () => void;
   onRefresh: () => void;
-  onLogout: () => void;
 }
 
 const ChecklistPresenter = ({
@@ -45,7 +43,6 @@ const ChecklistPresenter = ({
   onDelete,
   onCancelEdit,
   onRefresh,
-  onLogout,
 }: ChecklistPresenterProps) => {
   const getCategoryName = (categoryId: number) => {
     const match = categories.find((category) => category.id === categoryId);
@@ -53,9 +50,7 @@ const ChecklistPresenter = ({
   };
 
   return (
-    <div className="checklist">
-      <Header onLogout={onLogout} />
-
+    <div className="checklist" data-testid="checklist-page">
       <section className="checklist__hero">
         <div>
           <p className="checklist__eyebrow">Checklist Center</p>
@@ -64,19 +59,20 @@ const ChecklistPresenter = ({
             Track task progress and keep your plans on schedule.
           </p>
         </div>
-        <button className="ghost-button" onClick={onRefresh}>
+        <button className="ghost-button" onClick={onRefresh} data-testid="checklist-refresh">
           Refresh
         </button>
       </section>
 
       <section className="checklist__layout">
-        <form className="checklist__card" onSubmit={onSubmit}>
+        <form className="checklist__card" onSubmit={onSubmit} data-testid="checklist-form">
           <h2>{isEditing ? 'Update Checklist Item' : 'Create Checklist Item'}</h2>
           <div className="checklist__grid">
             <label>
               Title
               <input
                 type="text"
+                data-testid="checklist-title"
                 value={formState.title}
                 onChange={(event) => onChange('title', event.target.value)}
                 required
@@ -86,6 +82,7 @@ const ChecklistPresenter = ({
               Description
               <input
                 type="text"
+                data-testid="checklist-description"
                 value={formState.description}
                 onChange={(event) => onChange('description', event.target.value)}
                 required
@@ -94,6 +91,7 @@ const ChecklistPresenter = ({
             <label>
               Category
               <select
+                data-testid="checklist-category"
                 value={formState.checklistCategoryId}
                 onChange={(event) =>
                   onChange('checklistCategoryId', event.target.value)
@@ -115,6 +113,7 @@ const ChecklistPresenter = ({
             <label>
               Status
               <select
+                data-testid="checklist-status"
                 value={formState.status}
                 onChange={(event) => onChange('status', event.target.value)}
               >
@@ -127,6 +126,7 @@ const ChecklistPresenter = ({
               Reference Link
               <input
                 type="url"
+                data-testid="checklist-reference-link"
                 value={formState.referenceLink}
                 onChange={(event) =>
                   onChange('referenceLink', event.target.value)
@@ -138,6 +138,7 @@ const ChecklistPresenter = ({
               Completed At
               <input
                 type="datetime-local"
+                data-testid="checklist-completed-at"
                 value={formState.completedAt}
                 onChange={(event) => onChange('completedAt', event.target.value)}
               />
@@ -146,6 +147,7 @@ const ChecklistPresenter = ({
               User Id
               <input
                 type="number"
+                data-testid="checklist-user-id"
                 value={formState.userId}
                 onChange={(event) => onChange('userId', event.target.value)}
                 required
@@ -156,6 +158,7 @@ const ChecklistPresenter = ({
               Created By
               <input
                 type="text"
+                data-testid="checklist-created-by"
                 value={formState.createdBy}
                 onChange={(event) => onChange('createdBy', event.target.value)}
                 required
@@ -166,6 +169,7 @@ const ChecklistPresenter = ({
               Modified By
               <input
                 type="text"
+                data-testid="checklist-modified-by"
                 value={formState.modifiedBy}
                 onChange={(event) => onChange('modifiedBy', event.target.value)}
                 required={isEditing}
@@ -174,7 +178,7 @@ const ChecklistPresenter = ({
             </label>
           </div>
           <div className="checklist__actions">
-            <button className="primary-button" type="submit" disabled={isLoading}>
+            <button className="primary-button" type="submit" disabled={isLoading} data-testid="checklist-submit">
               {isEditing ? 'Update Checklist' : 'Create Checklist'}
             </button>
             {isEditing ? (
@@ -182,6 +186,7 @@ const ChecklistPresenter = ({
                 className="ghost-button"
                 type="button"
                 onClick={onCancelEdit}
+                data-testid="checklist-cancel"
               >
                 Cancel
               </button>
@@ -198,7 +203,7 @@ const ChecklistPresenter = ({
             </div>
             {isLoading ? <span>Loading...</span> : null}
           </div>
-          <div className="checklist__table">
+          <div className="checklist__table" data-testid="checklist-table">
             <div className="checklist__row checklist__row--head">
               <span>Title</span>
               <span>Description</span>
@@ -222,6 +227,7 @@ const ChecklistPresenter = ({
                       type="button"
                       className="link-button"
                       onClick={() => onEdit(item)}
+                      data-testid={`checklist-edit-${item.id}`}
                     >
                       Edit
                     </button>
@@ -229,6 +235,7 @@ const ChecklistPresenter = ({
                       type="button"
                       className="link-button link-button--danger"
                       onClick={() => onDelete(item.id)}
+                      data-testid={`checklist-delete-${item.id}`}
                     >
                       Delete
                     </button>

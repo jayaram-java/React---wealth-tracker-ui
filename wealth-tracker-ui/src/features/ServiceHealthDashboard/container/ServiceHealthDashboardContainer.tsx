@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../login/context/useAuth';
 import ServiceHealthDashboardPresenter from '../presenter/ServiceHealthDashboardPresenter';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
@@ -9,6 +8,7 @@ import type {
   ServiceHealthSummary,
 } from '../types/ServiceHealthDashboardTypes';
 import { getServiceDetails, getServiceSummary } from '../services/serviceHealthApi';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -67,8 +67,8 @@ const initDetailsState = (): ServiceDetailsState => ({
 });
 
 const ServiceHealthDashboardContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, logout } = useAuth();
+  const { accessToken } = useAuth();
+  const { navigateTo } = useAppNavigation();
 
   const [services, setServices] = useState<ServiceHealthSummary[]>([]);
   const [detailsById, setDetailsById] = useState<
@@ -84,9 +84,9 @@ const ServiceHealthDashboardContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
     }
-  }, [accessToken, navigate]);
+  }, [accessToken, navigateTo]);
 
   const serviceIndex = useMemo(() => {
     return monitoredServices.reduce<Record<string, MonitoredService>>((acc, svc) => {
@@ -206,11 +206,6 @@ const ServiceHealthDashboardContainer = () => {
     refreshAll();
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <ServiceHealthDashboardPresenter
       services={services}
@@ -219,7 +214,6 @@ const ServiceHealthDashboardContainer = () => {
       isLoading={isLoading}
       errorMessage={errorMessage}
       onRefresh={handleRefresh}
-      onLogout={handleLogout}
       onToggleDetails={handleToggleDetails}
       onRetryServiceHealth={refreshOne}
     />

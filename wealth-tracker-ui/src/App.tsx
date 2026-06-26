@@ -1,4 +1,14 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useMemo } from 'react';
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  type Location,
+} from 'react-router-dom';
 import './App.css';
 import LoginContainer from './features/login/container/LoginContainer';
 import DashboardContainer from './features/dashboard/container/DashboardContainer';
@@ -11,110 +21,86 @@ import ChecklistCategoryContainer from './features/ChecklistCategory/container/C
 import ChecklistContainer from './features/Checklist/container/ChecklistContainer';
 import FloatingChatbotContainer from './features/chatbot/container/FloatingChatbotContainer';
 import ExpenseReportContainer from './features/ExpenseReport/container/ExpenseReportContainer';
-import ProtectedRoute from './features/login/components/ProtectedRoute';
-import PersistLastLocation from './features/login/components/PersistLastLocation';
-import LandingRedirect from './features/login/components/LandingRedirect';
-import AdminRoute from './features/login/components/AdminRoute';
 import ServiceHealthDashboardContainer from './features/ServiceHealthDashboard/container/ServiceHealthDashboardContainer';
 import MetricsContainer from './features/Metrics/container/MetricsContainer';
+import Header from './components/Header';
+import { AppNavigationContext, getScreenFromLocation, buildNavigateTo } from './context/AppNavigationContext';
+import ProtectedRoute from './routes/ProtectedRoute';
+import { ROUTES } from './routes/routePaths';
+import { useAuth } from './features/login/context/useAuth';
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<LandingRedirect />} />
-    <Route path="/login" element={<LoginContainer />} />
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <DashboardContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/expense-categories"
-      element={
-        <ProtectedRoute>
-          <ExpenseCategoryContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/expense-details"
-      element={
-        <ProtectedRoute>
-          <ExpenseDetailsContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/checklist-categories"
-      element={
-        <ProtectedRoute>
-          <ChecklistCategoryContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/checklists"
-      element={
-        <ProtectedRoute>
-          <ChecklistContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/website-categories"
-      element={
-        <ProtectedRoute>
-          <WebsiteCategoryContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/website-links"
-      element={
-        <ProtectedRoute>
-          <WebsiteLinkContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/expense-reports"
-      element={
-        <ProtectedRoute>
-          <ExpenseReportContainer />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/service-health"
-      element={
-        <AdminRoute>
-          <ServiceHealthDashboardContainer />
-        </AdminRoute>
-      }
-    />
-    <Route
-      path="/metrics"
-      element={
-        <AdminRoute>
-          <MetricsContainer />
-        </AdminRoute>
-      }
-    />
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>
-);
+const AppLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  const currentScreen = useMemo(() => getScreenFromLocation(location), [location]);
+
+  return (
+    <AppNavigationContext.Provider
+      value={{ currentScreen, navigateTo: buildNavigateTo(navigate) }}
+    >
+      <Header onLogout={logout} />
+      <Outlet />
+      <FloatingChatbotContainer />
+    </AppNavigationContext.Provider>
+  );
+};
+
+const LoginRoute = () => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const from = (location.state as { from?: Location } | null)?.from?.pathname;
+
+  if (isAuthenticated) {
+    return <Navigate to={from ?? ROUTES.dashboard} replace />;
+  }
+
+  return <LoginContainer />;
+};
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <PersistLastLocation />
-        <AppRoutes />
-        <FloatingChatbotContainer />
-      </BrowserRouter>
-    </AuthProvider>
+    <BrowserRouter basename="/wealth-tracker">
+      <AuthProvider>
+        <Routes>
+          <Route element={<LoginRoute />} path={ROUTES.login} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route index element={<DashboardContainer />} />
+              <Route
+                path={ROUTES.expenseDetails}
+                element={<ExpenseDetailsContainer />}
+              />
+              <Route
+                path={ROUTES.expenseCategories}
+                element={<ExpenseCategoryContainer />}
+              />
+              <Route
+                path={ROUTES.checklistCategories}
+                element={<ChecklistCategoryContainer />}
+              />
+              <Route path={ROUTES.checklists} element={<ChecklistContainer />} />
+              <Route
+                path={ROUTES.websiteCategories}
+                element={<WebsiteCategoryContainer />}
+              />
+              <Route path={ROUTES.websiteLinks} element={<WebsiteLinkContainer />} />
+              <Route
+                path={ROUTES.expenseReports}
+                element={<ExpenseReportContainer />}
+              />
+              <Route
+                path={ROUTES.serviceHealth}
+                element={<ServiceHealthDashboardContainer />}
+              />
+              <Route path={ROUTES.metrics} element={<MetricsContainer />} />
+            </Route>
+          </Route>
+          <Route element={<Navigate to={ROUTES.dashboard} replace />} path="/" />
+          <Route path="*" element={<Navigate to={ROUTES.login} replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

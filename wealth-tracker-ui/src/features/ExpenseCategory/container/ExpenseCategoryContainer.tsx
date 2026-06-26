@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { deleteRequest, getRequest, postRequest, putRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import ExpenseCategoryPresenter from '../presenter/ExpenseCategoryPresenter';
@@ -11,6 +10,7 @@ import type {
 } from '../types/ExpenseCategoryTypes';
 import { useAuth } from '../../login/context/useAuth';
 import { decodeJwtPayload } from '../../../utils/jwt';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 interface JwtPayload {
   userId?: number;
@@ -27,8 +27,8 @@ const buildDefaultFormState = (username: string, userId: number | null) => ({
 });
 
 const ExpenseCategoryContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout, username } = useAuth();
+  const { accessToken, tokenType, username } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -73,11 +73,11 @@ const ExpenseCategoryContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchCategories();
-  }, [accessToken, navigate]);
+  }, [accessToken, navigateTo]);
 
   const handleChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -211,11 +211,6 @@ const ExpenseCategoryContainer = () => {
     resetForm();
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <ExpenseCategoryPresenter
       categories={categories}
@@ -229,7 +224,6 @@ const ExpenseCategoryContainer = () => {
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
       onRefresh={fetchCategories}
-      onLogout={handleLogout}
     />
   );
 };

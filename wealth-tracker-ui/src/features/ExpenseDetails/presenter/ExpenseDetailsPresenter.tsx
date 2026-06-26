@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import Header from '../../../components/Header';
 import type { ExpenseDetails, ExpenseStatus } from '../types/ExpenseDetailsTypes';
 import type { ExpenseCategory } from '../../ExpenseCategory/types/ExpenseCategoryTypes';
 import '../styles/ExpenseDetails.css';
@@ -35,7 +34,6 @@ interface ExpenseDetailsPresenterProps {
   onCancelEdit: () => void;
   onPageChange: (page: number) => void;
   onRefresh: () => void;
-  onLogout: () => void;
 }
 
 const ExpenseDetailsPresenter = ({
@@ -54,12 +52,9 @@ const ExpenseDetailsPresenter = ({
   onCancelEdit,
   onPageChange,
   onRefresh,
-  onLogout,
 }: ExpenseDetailsPresenterProps) => {
   return (
     <div className="expense-details">
-      <Header onLogout={onLogout} />
-
       <section className="expense-details__hero">
         <div>
           <p className="expense-details__eyebrow">Expense Center</p>

@@ -6,6 +6,14 @@ interface ApiRequestOptions {
   headers?: Record<string, string>;
 }
 
+type SessionTimeoutHandler = (() => void) | null;
+
+let onSessionTimeout: SessionTimeoutHandler = null;
+
+export const setSessionTimeoutHandler = (handler: SessionTimeoutHandler) => {
+  onSessionTimeout = handler;
+};
+
 const buildError = (message: string, status?: number): ApiError => {
   const error = new Error(message) as ApiError;
   error.status = status;
@@ -27,19 +35,37 @@ const parseResponse = async <TResponse>(
   }
 };
 
+const handleUnauthorized = () => {
+  onSessionTimeout?.();
+};
+
 const handleResponse = async <TResponse>(response: Response): Promise<TResponse> => {
   const data = await parseResponse<TResponse>(response);
+
+  if (response.status === 401) {
+    handleUnauthorized();
+  }
 
   if (!response.ok) {
     const message =
       data && typeof data === 'object' && 'message' in data && data.message
         ? data.message
-        : 'Request failed. Please try again.';
+        : response.status === 401
+          ? 'Your session has expired. Please sign in again.'
+          : 'Request failed. Please try again.';
     throw buildError(message, response.status);
   }
 
   return data as TResponse;
 };
+
+const attachHeaders = (
+  options?: ApiRequestOptions,
+  includeContentType = false
+): HeadersInit => ({
+  ...(includeContentType ? { 'Content-Type': 'application/json' } : {}),
+  ...(options?.headers ?? {}),
+});
 
 export const getRequest = async <TResponse>(
   url: string,
@@ -47,9 +73,7 @@ export const getRequest = async <TResponse>(
 ): Promise<TResponse> => {
   const response = await fetch(url, {
     method: 'GET',
-    headers: {
-      ...(options?.headers ?? {}),
-    },
+    headers: attachHeaders(options),
   });
 
   return handleResponse<TResponse>(response);
@@ -62,10 +86,7 @@ export const postRequest = async <TResponse, TPayload>(
 ): Promise<TResponse> => {
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options?.headers ?? {}),
-    },
+    headers: attachHeaders(options, true),
     body: JSON.stringify(payload),
   });
 
@@ -79,10 +100,7 @@ export const putRequest = async <TResponse, TPayload>(
 ): Promise<TResponse> => {
   const response = await fetch(url, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options?.headers ?? {}),
-    },
+    headers: attachHeaders(options, true),
     body: JSON.stringify(payload),
   });
 
@@ -95,10 +113,9 @@ export const deleteRequest = async <TResponse>(
 ): Promise<TResponse> => {
   const response = await fetch(url, {
     method: 'DELETE',
-    headers: {
-      ...(options?.headers ?? {}),
-    },
+    headers: attachHeaders(options),
   });
 
   return handleResponse<TResponse>(response);
 };
+

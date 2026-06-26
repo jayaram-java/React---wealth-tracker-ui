@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import DashboardPresenter from '../presenter/DashboardPresenter';
 import { useAuth } from '../../login/context/useAuth';
 import { getRequest } from '../../../serviceconfigs/AxiosAPI';
@@ -7,6 +6,7 @@ import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';
 import type { ExpenseReportTrends } from '../types/ExpenseTrendTypes';
 import { decodeJwtPayload } from '../../../utils/jwt';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 
 interface JwtPayload {
   userId?: number;
@@ -15,8 +15,8 @@ interface JwtPayload {
 const toIsoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 const DashboardContainer = () => {
-  const navigate = useNavigate();
-  const { accessToken, tokenType, logout } = useAuth();
+  const { accessToken, tokenType } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [monthSummary, setMonthSummary] = useState<ExpenseReportSummary | null>(
     null
   );
@@ -129,23 +129,17 @@ const DashboardContainer = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      navigate('/login');
+      navigateTo('login');
       return;
     }
     fetchSummaries();
     fetchTrends();
-  }, [accessToken, fetchSummaries, fetchTrends, navigate]);
+  }, [accessToken, fetchSummaries, fetchTrends, navigateTo]);
 
   const isLoading = isSummaryLoading || isTrendsLoading;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <DashboardPresenter
-      onLogout={handleLogout}
       isLoading={isLoading}
       errorMessage={errorMessage}
       monthSummary={monthSummary}

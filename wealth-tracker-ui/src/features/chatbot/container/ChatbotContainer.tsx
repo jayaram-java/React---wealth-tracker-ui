@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../login/context/useAuth';
+import { useAppNavigation } from '../../../context/AppNavigationContext';
 import ChatbotPresenter from '../presenter/ChatbotPresenter';
 import type {
   ChatMessage,
@@ -53,8 +53,8 @@ interface SpeechRecognitionLike {
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
 
 const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
-  const navigate = useNavigate();
   const { logout } = useAuth();
+  const { navigateTo } = useAppNavigation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
@@ -94,6 +94,29 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
     setMessages((prev) => [...prev, ...next]);
   }, []);
 
+  const navigateFromPath = useCallback(
+    (path: string) => {
+      const normalizedPath = path.replace(/^\/+/, '');
+      const target =
+        normalizedPath === 'dashboard'
+          ? 'dashboard'
+          : normalizedPath === 'expense-details'
+            ? 'expense-details'
+            : normalizedPath === 'expense-categories'
+              ? 'expense-categories'
+              : normalizedPath === 'website-categories'
+                ? 'website-categories'
+                : normalizedPath === 'website-links'
+                  ? 'website-links'
+                  : null;
+
+      if (target) {
+        navigateTo(target);
+      }
+    },
+    [navigateTo]
+  );
+
   const handleSend = useCallback(
     (value?: string) => {
       const messageText = (value ?? input).trim();
@@ -106,7 +129,7 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
 
       if (pendingAction && confirmation === 'confirm') {
         if (pendingAction.type === 'navigate') {
-          navigate(pendingAction.path);
+          navigateFromPath(pendingAction.path);
           appendMessages([
             buildMessage(messageText, 'user'),
             buildMessage(
@@ -117,7 +140,7 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
         }
         if (pendingAction.type === 'logout') {
           logout();
-          navigate('/login');
+          navigateTo('login');
           appendMessages([
             buildMessage(messageText, 'user'),
             buildMessage(getLogoutDoneReply(language), 'assistant'),
@@ -156,8 +179,9 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
       input,
       language,
       logout,
-      navigate,
       pendingAction,
+      navigateFromPath,
+      navigateTo,
     ]
   );
 
@@ -185,18 +209,18 @@ const ChatbotContainer = ({ isOpen, onToggle }: ChatbotContainerProps) => {
       return;
     }
     if (pendingAction.type === 'navigate') {
-      navigate(pendingAction.path);
+      navigateFromPath(pendingAction.path);
       appendMessages([
         buildMessage(getNavigateDoneReply(language, pendingAction.label), 'assistant'),
       ]);
     }
     if (pendingAction.type === 'logout') {
       logout();
-      navigate('/login');
+      navigateTo('login');
       appendMessages([buildMessage(getLogoutDoneReply(language), 'assistant')]);
     }
     setPendingAction(null);
-  }, [appendMessages, buildMessage, language, logout, navigate, pendingAction]);
+  }, [appendMessages, buildMessage, language, logout, navigateFromPath, navigateTo, pendingAction]);
 
   const handleCancelAction = useCallback(() => {
     if (!pendingAction) {
