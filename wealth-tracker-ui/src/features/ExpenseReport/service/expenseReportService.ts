@@ -1,4 +1,4 @@
-import { getRequest, postRequest } from '../../../serviceconfigs/AxiosAPI';
+import { getBlobRequest, getRequest, postRequest } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import type { ExpenseReportItem } from '../types/ExpenseReportTypes';
 
@@ -50,19 +50,10 @@ export const downloadExpensePdf = async (
   url.searchParams.set('startDate', startDate);
   url.searchParams.set('endDate', endDate);
 
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      ...(authHeader ?? {}),
-    },
+  const blob = await getBlobRequest(url.toString(), {
+    headers: authHeader,
   });
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || 'Failed to fetch expense PDF.');
-  }
-
-  const blob = await response.blob();
   if (!blob || blob.size === 0) {
     throw new Error('Expense PDF response was empty.');
   }

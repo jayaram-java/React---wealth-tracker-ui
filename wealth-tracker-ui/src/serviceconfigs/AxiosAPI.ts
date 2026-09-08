@@ -1,19 +1,57 @@
 import { generateRequestId, encryptPayload, decryptPayload } from '../utils/crypto';
 
-interface ApiError extends Error {
+export interface ApiError extends Error {
   status?: number;
 }
 
-interface ApiRequestOptions {
+export interface ApiRequestOptions {
   headers?: Record<string, string>;
+  skipLoader?: boolean;
 }
 
 type SessionTimeoutHandler = (() => void) | null;
+type LoaderListener = () => void;
 
 let onSessionTimeout: SessionTimeoutHandler = null;
+const loaderListeners = new Set<LoaderListener>();
+let activeRequestCount = 0;
 
 export const setSessionTimeoutHandler = (handler: SessionTimeoutHandler) => {
   onSessionTimeout = handler;
+};
+
+export const subscribeToLoader = (listener: LoaderListener): (() => void) => {
+  loaderListeners.add(listener);
+  return () => {
+    loaderListeners.delete(listener);
+  };
+};
+
+export const getActiveRequestCount = (): number => activeRequestCount;
+
+const notifyLoaderListeners = () => {
+  loaderListeners.forEach((listener) => {
+    try {
+      listener();
+    } catch (err) {
+      console.error('Error in loader listener:', err);
+    }
+  });
+};
+
+export const startLoading = () => {
+  activeRequestCount++;
+  notifyLoaderListeners();
+};
+
+export const stopLoading = () => {
+  activeRequestCount = Math.max(0, activeRequestCount - 1);
+  notifyLoaderListeners();
+};
+
+export const resetLoader = () => {
+  activeRequestCount = 0;
+  notifyLoaderListeners();
 };
 
 const buildError = (message: string, status?: number): ApiError => {
@@ -74,102 +112,113 @@ interface DecryptedEnvelope<T> {
 const performRequest = async <TResponse>(
   url: string,
   method: string,
-  bodyPayload?: any,
+  bodyPayload?: unknown,
   options?: ApiRequestOptions
 ): Promise<TResponse> => {
-  const encryptReq = shouldEncrypt(url);
-  const requestId = encryptReq ? generateRequestId() : undefined;
-
-  let headers = attachHeaders(options, bodyPayload !== undefined);
-
-  if (encryptReq && requestId) {
-    headers = {
-      ...headers,
-      'X-Auth-Request-Id': requestId,
-    };
+  const showLoader = !options?.skipLoader;
+  if (showLoader) {
+    startLoading();
   }
 
-  let body: BodyInit | undefined = undefined;
-  if (bodyPayload !== undefined) {
-    const jsonStr = JSON.stringify(bodyPayload);
+  try {
+    const encryptReq = shouldEncrypt(url);
+    const requestId = encryptReq ? generateRequestId() : undefined;
+
+    let headers = attachHeaders(options, bodyPayload !== undefined);
+
     if (encryptReq && requestId) {
-      const encrypted = await encryptPayload(jsonStr, requestId, encryptionKey);
-      body = encrypted;
       headers = {
         ...headers,
-        'X-Content-Encryption': 'AES-256-GCM',
+        'X-Auth-Request-Id': requestId,
       };
-    } else {
-      body = jsonStr;
     }
-  }
 
-  const response = await fetch(url, {
-    method,
-    headers,
-    body,
-  });
-
-  const responseRequestId = response.headers.get('X-Auth-Request-Id');
-
-  if (response.status === 401) {
-    handleUnauthorized();
-  }
-
-  if (response.status === 204) {
-    if (encryptReq && requestId) {
-      if (responseRequestId !== requestId) {
-        throw buildError('Request ID binding verification failed', response.status);
+    let body: BodyInit | undefined = undefined;
+    if (bodyPayload !== undefined) {
+      const jsonStr = JSON.stringify(bodyPayload);
+      if (encryptReq && requestId) {
+        const encrypted = await encryptPayload(jsonStr, requestId, encryptionKey);
+        body = encrypted;
+        headers = {
+          ...headers,
+          'X-Content-Encryption': 'AES-256-GCM',
+        };
+      } else {
+        body = jsonStr;
       }
     }
-    if (!response.ok) {
-      throw buildError('Request failed', response.status);
+
+    const response = await fetch(url, {
+      method,
+      headers,
+      body,
+    });
+
+    const responseRequestId = response.headers.get('X-Auth-Request-Id');
+
+    if (response.status === 401) {
+      handleUnauthorized();
     }
-    return null as TResponse;
-  }
 
-  const isEncrypted = response.headers.get('X-Content-Encryption') === 'AES-256-GCM';
-  let responseData: any = null;
-
-  if (isEncrypted && encryptReq && requestId) {
-    const rawText = await response.text();
-    if (rawText) {
-      try {
-        const decryptedText = await decryptPayload(rawText, requestId, encryptionKey);
-        const envelope = JSON.parse(decryptedText) as DecryptedEnvelope<TResponse>;
-        if (envelope.authRequestId !== requestId) {
+    if (response.status === 204) {
+      if (encryptReq && requestId) {
+        if (responseRequestId !== requestId) {
           throw buildError('Request ID binding verification failed', response.status);
         }
-        responseData = envelope.resultData;
-      } catch (err) {
-        if ((err as ApiError).status !== undefined) {
-          throw err;
+      }
+      if (!response.ok) {
+        throw buildError('Request failed', response.status);
+      }
+      return null as TResponse;
+    }
+
+    const isEncrypted = response.headers.get('X-Content-Encryption') === 'AES-256-GCM';
+    let responseData: unknown = null;
+
+    if (isEncrypted && encryptReq && requestId) {
+      const rawText = await response.text();
+      if (rawText) {
+        try {
+          const decryptedText = await decryptPayload(rawText, requestId, encryptionKey);
+          const envelope = JSON.parse(decryptedText) as DecryptedEnvelope<TResponse>;
+          if (envelope.authRequestId !== requestId) {
+            throw buildError('Request ID binding verification failed', response.status);
+          }
+          responseData = envelope.resultData;
+        } catch (err) {
+          if ((err as ApiError).status !== undefined) {
+            throw err;
+          }
+          throw buildError('Failed to decrypt response or verify binding', response.status);
         }
-        throw buildError('Failed to decrypt response or verify binding', response.status);
+      }
+    } else {
+      const rawText = await response.text();
+      if (rawText) {
+        try {
+          responseData = JSON.parse(rawText);
+        } catch {
+          responseData = { message: rawText };
+        }
       }
     }
-  } else {
-    const rawText = await response.text();
-    if (rawText) {
-      try {
-        responseData = JSON.parse(rawText);
-      } catch {
-        responseData = { message: rawText };
-      }
+
+    if (!response.ok) {
+      const message =
+        responseData && typeof responseData === 'object' && 'message' in responseData && typeof (responseData as { message?: unknown }).message === 'string'
+          ? (responseData as { message: string }).message
+          : response.status === 401
+            ? 'Your session has expired. Please sign in again.'
+            : 'Request failed. Please try again.';
+      throw buildError(message, response.status);
+    }
+
+    return responseData as TResponse;
+  } finally {
+    if (showLoader) {
+      stopLoading();
     }
   }
-
-  if (!response.ok) {
-    const message =
-      responseData && typeof responseData === 'object' && 'message' in responseData && responseData.message
-        ? responseData.message
-        : response.status === 401
-          ? 'Your session has expired. Please sign in again.'
-          : 'Request failed. Please try again.';
-    throw buildError(message, response.status);
-  }
-
-  return responseData as TResponse;
 };
 
 export const getRequest = async <TResponse>(
@@ -207,78 +256,35 @@ export const postMultipartRequest = async <TResponse>(
   formData: FormData,
   options?: ApiRequestOptions
 ): Promise<TResponse> => {
-  const headers = {
-    ...(options?.headers ?? {}),
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: formData,
-  });
-
-  if (response.status === 401) {
-    handleUnauthorized();
+  const showLoader = !options?.skipLoader;
+  if (showLoader) {
+    startLoading();
   }
 
-  if (response.status === 204) {
-    if (!response.ok) {
-      throw buildError('Request failed', response.status);
-    }
-    return null as TResponse;
-  }
-
-  const rawText = await response.text();
-  let responseData: any = null;
-  if (rawText) {
-    try {
-      responseData = JSON.parse(rawText);
-    } catch {
-      responseData = { message: rawText };
-    }
-  }
-
-  if (!response.ok) {
-    const message =
-      responseData && typeof responseData === 'object' && 'message' in responseData && responseData.message
-        ? responseData.message
-        : response.status === 401
-          ? 'Your session has expired. Please sign in again.'
-          : 'Request failed. Please try again.';
-    throw buildError(message, response.status);
-  }
-
-  return responseData as TResponse;
-};
-
-export const getBlobRequest = async (
-  url: string,
-  options?: ApiRequestOptions
-): Promise<Blob> => {
-  const encryptReq = shouldEncrypt(url);
-  const requestId = encryptReq ? generateRequestId() : undefined;
-
-  let headers = attachHeaders(options, false);
-
-  if (encryptReq && requestId) {
-    headers = {
-      ...headers,
-      'X-Auth-Request-Id': requestId,
+  try {
+    const headers = {
+      ...(options?.headers ?? {}),
     };
-  }
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers,
-  });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-  }
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
 
-  if (!response.ok) {
+    if (response.status === 204) {
+      if (!response.ok) {
+        throw buildError('Request failed', response.status);
+      }
+      return null as TResponse;
+    }
+
     const rawText = await response.text();
-    let responseData: any = null;
+    let responseData: unknown = null;
     if (rawText) {
       try {
         responseData = JSON.parse(rawText);
@@ -286,14 +292,79 @@ export const getBlobRequest = async (
         responseData = { message: rawText };
       }
     }
-    const message =
-      responseData && typeof responseData === 'object' && 'message' in responseData && responseData.message
-        ? responseData.message
-        : response.status === 401
-          ? 'Your session has expired. Please sign in again.'
-          : 'Request failed. Please try again.';
-    throw buildError(message, response.status);
+
+    if (!response.ok) {
+      const message =
+        responseData && typeof responseData === 'object' && 'message' in responseData && typeof (responseData as { message?: unknown }).message === 'string'
+          ? (responseData as { message: string }).message
+          : response.status === 401
+            ? 'Your session has expired. Please sign in again.'
+            : 'Request failed. Please try again.';
+      throw buildError(message, response.status);
+    }
+
+    return responseData as TResponse;
+  } finally {
+    if (showLoader) {
+      stopLoading();
+    }
+  }
+};
+
+export const getBlobRequest = async (
+  url: string,
+  options?: ApiRequestOptions
+): Promise<Blob> => {
+  const showLoader = !options?.skipLoader;
+  if (showLoader) {
+    startLoading();
   }
 
-  return await response.blob();
+  try {
+    const encryptReq = shouldEncrypt(url);
+    const requestId = encryptReq ? generateRequestId() : undefined;
+
+    let headers = attachHeaders(options, false);
+
+    if (encryptReq && requestId) {
+      headers = {
+        ...headers,
+        'X-Auth-Request-Id': requestId,
+      };
+    }
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    });
+
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+
+    if (!response.ok) {
+      const rawText = await response.text();
+      let responseData: unknown = null;
+      if (rawText) {
+        try {
+          responseData = JSON.parse(rawText);
+        } catch {
+          responseData = { message: rawText };
+        }
+      }
+      const message =
+        responseData && typeof responseData === 'object' && 'message' in responseData && typeof (responseData as { message?: unknown }).message === 'string'
+          ? (responseData as { message: string }).message
+          : response.status === 401
+            ? 'Your session has expired. Please sign in again.'
+            : 'Request failed. Please try again.';
+      throw buildError(message, response.status);
+    }
+
+    return await response.blob();
+  } finally {
+    if (showLoader) {
+      stopLoading();
+    }
+  }
 };

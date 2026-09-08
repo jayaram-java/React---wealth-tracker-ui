@@ -29,6 +29,7 @@ import { AppNavigationContext, getScreenFromLocation, buildNavigateTo } from './
 import ProtectedRoute from './routes/ProtectedRoute';
 import { ROUTES } from './routes/routePaths';
 import { useAuth } from './features/login/context/useAuth';
+import ApiLoader from './components/common/ApiLoader';
 
 const AppLayout = () => {
   const location = useLocation();
@@ -78,6 +79,7 @@ function App() {
   return (
     <BrowserRouter basename="/wealth-tracker">
       <AuthProvider>
+        <ApiLoader />
         <Routes>
           <Route element={<LoginRoute />} path={ROUTES.login} />
           <Route element={<RegisterRoute />} path={ROUTES.register} />
