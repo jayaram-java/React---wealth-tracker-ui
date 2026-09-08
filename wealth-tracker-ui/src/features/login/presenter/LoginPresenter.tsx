@@ -1,10 +1,14 @@
+import { Link as RouterLink } from 'react-router-dom';
+import { Link } from '@mui/material';
 import '../styles/Login.css';
+import { ROUTES } from '../../../routes/routePaths';
 
 interface LoginPresenterProps {
   username: string;
   password: string;
   isLoading: boolean;
   errorMessage: string | null;
+  registerPath: string;
   onUsernameChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
@@ -15,6 +19,7 @@ const LoginPresenter = ({
   password,
   isLoading,
   errorMessage,
+  registerPath,
   onUsernameChange,
   onPasswordChange,
   onSubmit,
@@ -89,8 +94,10 @@ const LoginPresenter = ({
         </form>
 
         <div className="login-card__footer">
-          <span>Need help?</span>
-          <span>Contact your administrator.</span>
+          <span>Don&apos;t have an account?</span>
+          <Link component={RouterLink} to={registerPath ?? ROUTES.register} underline="hover">
+            Register
+          </Link>
         </div>
       </div>
     </div>

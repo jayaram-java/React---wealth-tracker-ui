@@ -1,6 +1,7 @@
 import type { AuthPayload } from '../types/LoginTypes';
 
 const AUTH_STORAGE_KEY = 'wealth_tracker_auth';
+export const LAST_SCREEN_STORAGE_KEY = 'wealth_tracker_last_screen';
 
 export const readStoredAuth = (): AuthPayload | null => {
   if (typeof window === 'undefined') {
@@ -34,3 +35,10 @@ export const clearStoredAuth = () => {
   window.localStorage.removeItem(AUTH_STORAGE_KEY);
 };
 
+export const clearAuthSessionStorage = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.sessionStorage.removeItem(LAST_SCREEN_STORAGE_KEY);
+};

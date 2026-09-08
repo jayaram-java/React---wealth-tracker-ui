@@ -46,6 +46,7 @@ const LoginContainer = () => {
       password={password}
       isLoading={isLoading}
       errorMessage={errorMessage}
+      registerPath={ROUTES.register}
       onUsernameChange={setUsername}
       onPasswordChange={setPassword}
       onSubmit={handleSubmit}

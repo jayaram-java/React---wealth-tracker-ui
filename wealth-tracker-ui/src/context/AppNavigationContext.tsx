@@ -4,6 +4,7 @@ import { screenToPath } from '../routes/routePaths';
 
 export type AppScreen =
   | 'login'
+  | 'register'
   | 'dashboard'
   | 'expense-details'
   | 'expense-categories'

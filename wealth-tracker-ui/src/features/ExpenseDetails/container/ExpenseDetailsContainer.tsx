@@ -4,6 +4,8 @@ import {
   getRequest,
   postRequest,
   putRequest,
+  postMultipartRequest,
+  getBlobRequest,
 } from '../../../serviceconfigs/AxiosAPI';
 import { API_ENDPOINTS } from '../../../serviceconfigs/ApiEndpoints';
 import { useAuth } from '../../login/context/useAuth';
@@ -14,6 +16,7 @@ import type {
   ExpenseDetailsCreatePayload,
   ExpenseDetailsUpdatePayload,
   ExpenseStatus,
+  ExpenseReceipt,
 } from '../types/ExpenseDetailsTypes';
 import { decodeJwtPayload } from '../../../utils/jwt';
 import { useAppNavigation } from '../../../context/AppNavigationContext';
@@ -21,6 +24,9 @@ import { useAppNavigation } from '../../../context/AppNavigationContext';
 interface JwtPayload {
   userId?: number;
 }
+
+type SortBy = 'name' | 'category' | 'recentlyAdded' | 'recentlyUpdated';
+type QuickFilter = 'all' | 'category' | 'payment';
 
 const buildDefaultFormState = (username: string, userId: number | null) => ({
   expenseName: '',
@@ -34,7 +40,7 @@ const buildDefaultFormState = (username: string, userId: number | null) => ({
   currency: 'INR',
   userId: userId !== null ? String(userId) : '',
   status: 'ACTIVE' as ExpenseStatus,
-  categoryId: '1',
+  categoryId: '',
   createdBy: username || 'web',
   modifiedBy: username || '',
 });
@@ -45,10 +51,21 @@ const ExpenseDetailsContainer = () => {
   const [expenseDetails, setExpenseDetails] = useState<ExpenseDetails[]>([]);
   const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [sortBy, setSortBy] = useState<SortBy>('recentlyAdded');
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ExpenseDetails | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingReceipts, setExistingReceipts] = useState<ExpenseReceipt[]>([]);
+  const [activeReceiptsExpense, setActiveReceiptsExpense] = useState<ExpenseDetails | null>(null);
   const [formState, setFormState] = useState(() =>
     buildDefaultFormState(username, null)
   );
@@ -94,16 +111,16 @@ const ExpenseDetailsContainer = () => {
         { headers: authHeader }
       );
       setCategories(response);
-      if (response.length > 0 && editingId === null) {
-        const exists = response.some(
-          (category) => String(category.id) === formState.categoryId
-        );
-        if (!exists) {
-          setFormState((prev) => ({
+      if (response.length > 0) {
+        setFormState((prev) => {
+          if (prev.categoryId) {
+            return prev;
+          }
+          return {
             ...prev,
             categoryId: String(response[0].id),
-          }));
-        }
+          };
+        });
       }
     } catch {
       // Ignore category fetch failures; expense details can still load
@@ -126,6 +143,8 @@ const ExpenseDetailsContainer = () => {
   const resetForm = () => {
     setFormState(buildDefaultFormState(username, userId));
     setEditingId(null);
+    setSelectedFiles([]);
+    setExistingReceipts([]);
   };
 
   useEffect(() => {
@@ -140,7 +159,6 @@ const ExpenseDetailsContainer = () => {
     if (userId === null) {
       return;
     }
-    console.log('ExpenseDetails userId:', userId);
     setFormState((prev) => ({
       ...prev,
       userId: String(userId),
@@ -149,8 +167,9 @@ const ExpenseDetailsContainer = () => {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
       if (userId === null) {
@@ -169,6 +188,7 @@ const ExpenseDetailsContainer = () => {
           payload,
           { headers: authHeader }
         );
+        setSuccessMessage('Expense updated successfully.');
       } else {
         const payload: ExpenseDetailsCreatePayload = {
           expenseName: formState.expenseName.trim(),
@@ -185,11 +205,29 @@ const ExpenseDetailsContainer = () => {
           categoryId: Number(formState.categoryId),
           createdBy: username || 'web',
         };
-        await postRequest<ExpenseDetails, ExpenseDetailsCreatePayload>(
-          API_ENDPOINTS.expense.details,
-          payload,
-          { headers: authHeader }
-        );
+
+        if (selectedFiles.length > 0) {
+          const formData = new FormData();
+          formData.append(
+            'request',
+            new Blob([JSON.stringify(payload)], { type: 'application/json' })
+          );
+          selectedFiles.forEach((file) => {
+            formData.append('receipts', file);
+          });
+          await postMultipartRequest<ExpenseDetails>(
+            API_ENDPOINTS.expense.details,
+            formData,
+            { headers: authHeader }
+          );
+        } else {
+          await postRequest<ExpenseDetails, ExpenseDetailsCreatePayload>(
+            API_ENDPOINTS.expense.details,
+            payload,
+            { headers: authHeader }
+          );
+        }
+        setSuccessMessage('Expense created successfully.');
       }
       resetForm();
       await fetchExpenseDetails();
@@ -198,12 +236,15 @@ const ExpenseDetailsContainer = () => {
         error instanceof Error ? error.message : 'Unable to save expense details.';
       setErrorMessage(message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleEdit = async (detail: ExpenseDetails) => {
+    setDrawerOpen(true);
     setEditingId(detail.id);
+    setExistingReceipts(detail.receipts || []);
+    setSelectedFiles([]);
     setFormState({
       expenseName: detail.expenseName,
       expenseDate: detail.expenseDate,
@@ -238,19 +279,24 @@ const ExpenseDetailsContainer = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm('Delete this expense detail?');
-    if (!confirmed) {
+  const handleDeleteRequest = (detail: ExpenseDetails) => {
+    setDeleteTarget(detail);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) {
       return;
     }
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
     try {
-      await deleteRequest<void>(API_ENDPOINTS.expense.detailById(id), {
+      await deleteRequest<void>(API_ENDPOINTS.expense.detailById(deleteTarget.id), {
         headers: authHeader,
       });
+      setSuccessMessage('Expense deleted successfully.');
       await fetchExpenseDetails();
-      if (editingId === id) {
+      if (editingId === deleteTarget.id) {
         resetForm();
       }
     } catch (error) {
@@ -258,21 +304,105 @@ const ExpenseDetailsContainer = () => {
         error instanceof Error ? error.message : 'Unable to delete expense detail.';
       setErrorMessage(message);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
+      setDeleteTarget(null);
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(expenseDetails.length / pageSize));
+  const handleDeleteCancel = () => {
+    setDeleteTarget(null);
+  };
+
+  const handleAddNew = () => {
+    resetForm();
+    setDrawerOpen(true);
+  };
+
+  const filteredAndSortedExpenses = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const items = expenseDetails.filter((detail) => {
+      const categoryName =
+        categories.find((category) => category.id === detail.categoryId)?.name ?? '';
+      const matchesSearch =
+        normalizedQuery.length === 0 ||
+        [
+          detail.expenseName,
+          detail.description,
+          detail.paymentMethod,
+          detail.expenseCode,
+          detail.referenceNumber,
+          detail.receiptUrl,
+          categoryName,
+        ]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(normalizedQuery));
+      const matchesCategory =
+        selectedCategoryId === '' || String(detail.categoryId) === selectedCategoryId;
+      const matchesQuickFilter =
+        quickFilter === 'all' ||
+        (quickFilter === 'category' && selectedCategoryId !== '') ||
+        (quickFilter === 'payment' && detail.paymentMethod);
+      return matchesSearch && matchesCategory && matchesQuickFilter;
+    });
+
+    const sorted = [...items].sort((left, right) => {
+      switch (sortBy) {
+        case 'name':
+          return left.expenseName.localeCompare(right.expenseName);
+        case 'category': {
+          const leftCategory =
+            categories.find((category) => category.id === left.categoryId)?.name ?? '';
+          const rightCategory =
+            categories.find((category) => category.id === right.categoryId)?.name ?? '';
+          return leftCategory.localeCompare(rightCategory);
+        }
+        case 'recentlyUpdated':
+          return (
+            new Date(right.modifiedDate ?? right.createdDate).getTime() -
+            new Date(left.modifiedDate ?? left.createdDate).getTime()
+          );
+        case 'recentlyAdded':
+        default:
+          return (
+            new Date(right.createdDate).getTime() - new Date(left.createdDate).getTime()
+          );
+      }
+    });
+
+    return sorted;
+  }, [categories, expenseDetails, quickFilter, searchQuery, selectedCategoryId, sortBy]);
+
+  const totalExpenses = useMemo(
+    () => expenseDetails.reduce((sum, detail) => sum + Number(detail.amount || 0), 0),
+    [expenseDetails]
+  );
+  const monthlySpend = useMemo(() => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    return expenseDetails
+      .filter((detail) => detail.expenseDate.startsWith(currentMonth))
+      .reduce((sum, detail) => sum + Number(detail.amount || 0), 0);
+  }, [expenseDetails]);
+  const currentMonthCount = useMemo(() => {
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    return expenseDetails.filter((detail) => detail.expenseDate.startsWith(currentMonth)).length;
+  }, [expenseDetails]);
+
+  const totalFilteredCount = filteredAndSortedExpenses.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / rowsPerPage));
   const pagedExpenses = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return expenseDetails.slice(startIndex, startIndex + pageSize);
-  }, [currentPage, expenseDetails, pageSize]);
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    return filteredAndSortedExpenses.slice(startIndex, startIndex + rowsPerPage);
+  }, [currentPage, filteredAndSortedExpenses, rowsPerPage]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategoryId, sortBy, rowsPerPage]);
 
   const handlePageChange = (page: number) => {
     const nextPage = Math.min(Math.max(1, page), totalPages);
@@ -288,23 +418,128 @@ const ExpenseDetailsContainer = () => {
     fetchCategories();
   };
 
+  const handleSnackbarClose = () => {
+    setSuccessMessage(null);
+  };
+
+  const handleFileChange = (newFiles: FileList | null) => {
+    setErrorMessage(null);
+    if (!newFiles) return;
+    const filesList = Array.from(newFiles);
+
+    if (selectedFiles.length + filesList.length > 10) {
+      setErrorMessage('A maximum of 10 receipt files is allowed.');
+      return;
+    }
+
+    const validFiles: File[] = [];
+    for (const file of filesList) {
+      if (file.size <= 0) {
+        setErrorMessage('Receipt file must not be empty.');
+        return;
+      }
+      if (file.size > 15 * 1024 * 1024) {
+        setErrorMessage('Receipt file exceeds the maximum allowed size of 15MB.');
+        return;
+      }
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        setErrorMessage('Unsupported receipt content type. Only PDF, JPEG, and PNG are allowed.');
+        return;
+      }
+      validFiles.push(file);
+    }
+
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleViewReceipt = async (expenseId: number, receiptId: number) => {
+    try {
+      const url = API_ENDPOINTS.expense.receiptById(expenseId, receiptId);
+      const blob = await getBlobRequest(url, { headers: authHeader });
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to view receipt.';
+      setErrorMessage(message);
+    }
+  };
+
+  const handleDownloadReceipt = async (expenseId: number, receipt: ExpenseReceipt) => {
+    try {
+      const url = API_ENDPOINTS.expense.receiptById(expenseId, receipt.id);
+      const blob = await getBlobRequest(url, { headers: authHeader });
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = receipt.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to download receipt.';
+      setErrorMessage(message);
+    }
+  };
+
   return (
     <ExpenseDetailsPresenter
       expenseDetails={pagedExpenses}
       categories={categories}
       isLoading={isLoading}
+      isSubmitting={isSubmitting}
       errorMessage={errorMessage}
+      successMessage={successMessage}
       formState={formState}
       isEditing={editingId !== null}
+      editingId={editingId}
       currentPage={currentPage}
       totalPages={totalPages}
+      rowsPerPage={rowsPerPage}
+      totalCount={expenseDetails.length}
+      filteredCount={totalFilteredCount}
+      searchQuery={searchQuery}
+      selectedCategoryId={selectedCategoryId}
+      sortBy={sortBy}
+      quickFilter={quickFilter}
+      drawerOpen={drawerOpen}
+      totalExpenses={totalExpenses}
+      monthlySpend={monthlySpend}
+      currentMonthCount={currentMonthCount}
+      deleteDialogOpen={deleteTarget !== null}
+      deleteTarget={deleteTarget}
+      selectedFiles={selectedFiles}
+      existingReceipts={existingReceipts}
+      activeReceiptsExpense={activeReceiptsExpense}
+      onFileChange={handleFileChange}
+      onRemoveFile={handleRemoveFile}
+      onViewReceipt={handleViewReceipt}
+      onDownloadReceipt={handleDownloadReceipt}
+      onOpenReceiptsDialog={setActiveReceiptsExpense}
+      onCloseReceiptsDialog={() => setActiveReceiptsExpense(null)}
       onChange={handleChange}
       onSubmit={handleSubmit}
       onEdit={handleEdit}
-      onDelete={handleDelete}
+      onDeleteRequest={handleDeleteRequest}
+      onConfirmDelete={handleConfirmDelete}
+      onCancelDelete={handleDeleteCancel}
       onCancelEdit={handleCancelEdit}
       onPageChange={handlePageChange}
+      onRowsPerPageChange={setRowsPerPage}
       onRefresh={handleRefresh}
+      onSearchChange={setSearchQuery}
+      onCategoryFilterChange={setSelectedCategoryId}
+      onSortChange={(value) => setSortBy(value as SortBy)}
+      onQuickFilterChange={(value) => setQuickFilter(value as QuickFilter)}
+      onAddNew={handleAddNew}
+      onDrawerClose={() => setDrawerOpen(false)}
+      onSnackbarClose={handleSnackbarClose}
     />
   );
 };

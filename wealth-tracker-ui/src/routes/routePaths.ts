@@ -2,6 +2,7 @@ import type { AppScreen } from '../context/AppNavigationContext';
 
 export const ROUTES = {
   login: '/login',
+  register: '/register',
   dashboard: '/',
   expenseDetails: '/expense-details',
   expenseCategories: '/expense-categories',
@@ -16,6 +17,7 @@ export const ROUTES = {
 
 export const screenToPath: Record<AppScreen, string> = {
   login: ROUTES.login,
+  register: ROUTES.register,
   dashboard: ROUTES.dashboard,
   'expense-details': ROUTES.expenseDetails,
   'expense-categories': ROUTES.expenseCategories,

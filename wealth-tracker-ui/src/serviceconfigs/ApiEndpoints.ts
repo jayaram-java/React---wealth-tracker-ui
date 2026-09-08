@@ -1,13 +1,15 @@
 const AUTH_BASE_URL =
-  import.meta.env.VITE_AUTH_BASE_URL ?? 'http://localhost:8085';
+  import.meta.env.VITE_AUTH_BASE_URL ?? 'http://localhost:8080';
 const EXPENSE_BASE_URL =
-  import.meta.env.VITE_EXPENSE_BASE_URL ?? 'http://localhost:8086';
+  import.meta.env.VITE_EXPENSE_BASE_URL ?? 'http://localhost:8080';
 const REPORT_AUTOMATION_BASE_URL =
-  import.meta.env.VITE_REPORT_AUTOMATION_BASE_URL ?? 'http://localhost:8089';
+  import.meta.env.VITE_REPORT_AUTOMATION_BASE_URL ?? 'http://localhost:8080';
 
 export const API_ENDPOINTS = {
   auth: {
     login: `${AUTH_BASE_URL}/authservice/api/auth/login`,
+    register: `${AUTH_BASE_URL}/authservice/api/auth/register`,
+    logout: `${AUTH_BASE_URL}/authservice/api/auth/logout`,
   },
   actuator: {
     authService: {
@@ -49,6 +51,10 @@ export const API_ENDPOINTS = {
     details: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-details`,
     detailById: (id: number) =>
       `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-details/${id}`,
+    receipts: (expenseId: number) =>
+      `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-details/${expenseId}/receipts`,
+    receiptById: (expenseId: number, receiptId: number) =>
+      `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-details/${expenseId}/receipts/${receiptId}`,
     summary: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/summary`,
     trends: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/trends`,
     reportDetails: `${EXPENSE_BASE_URL}/expenseservice/api/v1/expense-reports/details`,

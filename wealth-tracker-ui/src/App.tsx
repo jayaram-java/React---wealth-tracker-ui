@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import './App.css';
 import LoginContainer from './features/login/container/LoginContainer';
+import RegisterContainer from './features/Register/RegisterContainer';
 import DashboardContainer from './features/dashboard/container/DashboardContainer';
 import { AuthProvider } from './features/login/context/AuthProvider';
 import ExpenseCategoryContainer from './features/ExpenseCategory/container/ExpenseCategoryContainer';
@@ -35,11 +36,16 @@ const AppLayout = () => {
   const { logout } = useAuth();
   const currentScreen = useMemo(() => getScreenFromLocation(location), [location]);
 
+  const handleLogout = async () => {
+    await logout();
+    navigate(ROUTES.login, { replace: true });
+  };
+
   return (
     <AppNavigationContext.Provider
       value={{ currentScreen, navigateTo: buildNavigateTo(navigate) }}
     >
-      <Header onLogout={logout} />
+      <Header onLogout={handleLogout} />
       <Outlet />
       <FloatingChatbotContainer />
     </AppNavigationContext.Provider>
@@ -58,12 +64,23 @@ const LoginRoute = () => {
   return <LoginContainer />;
 };
 
+const RegisterRoute = () => {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to={ROUTES.dashboard} replace />;
+  }
+
+  return <RegisterContainer />;
+};
+
 function App() {
   return (
     <BrowserRouter basename="/wealth-tracker">
       <AuthProvider>
         <Routes>
           <Route element={<LoginRoute />} path={ROUTES.login} />
+          <Route element={<RegisterRoute />} path={ROUTES.register} />
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route index element={<DashboardContainer />} />

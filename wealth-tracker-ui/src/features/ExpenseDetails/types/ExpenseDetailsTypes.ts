@@ -1,5 +1,13 @@
 export type ExpenseStatus = 'ACTIVE' | 'INACTIVE';
 
+export interface ExpenseReceipt {
+  id: number;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+  viewUrl: string;
+}
+
 export interface ExpenseDetails {
   id: number;
   expenseName: string;
@@ -10,6 +18,7 @@ export interface ExpenseDetails {
   expenseCode: string;
   referenceNumber: string;
   receiptUrl: string;
+  receipts?: ExpenseReceipt[];
   currency: string;
   userId: number;
   status: ExpenseStatus;

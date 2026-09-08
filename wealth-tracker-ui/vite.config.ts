@@ -4,6 +4,7 @@ import babel from '@rolldown/plugin-babel'
 
 // https://vite.dev/config/
 export default defineConfig({
+  //base: '/',
   base: '/wealth-tracker/',
   plugins: [
     react(),
@@ -12,15 +13,15 @@ export default defineConfig({
   server: {
     proxy: {
       '/authservice': {
-        target: 'http://localhost:8085',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
       '/expenseservice': {
-        target: 'http://localhost:8086',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
       '/report-automation-service': {
-        target: 'http://localhost:8089',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
     },

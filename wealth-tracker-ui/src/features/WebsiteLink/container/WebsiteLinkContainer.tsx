@@ -21,7 +21,7 @@ const buildDefaultFormState = (username: string) => ({
   description: '',
   remarks: '',
   isActive: true,
-  categoryId: '1',
+  categoryId: '',
   createdBy: username || 'web',
   modifiedBy: username || '',
 });
@@ -31,16 +31,36 @@ const compareCategoryNames = (left: WebsiteCategory, right: WebsiteCategory) =>
     sensitivity: 'base',
   });
 
+type SortOption = 'newest' | 'oldest' | 'alpha' | 'category';
+
+  const compareLinksByCategory = (
+  left: WebsiteLink,
+  right: WebsiteLink,
+  categories: WebsiteCategory[]
+) => {
+  const categoryLookup = new Map(
+    categories.map((category) => [category.id, category.categoryName])
+  );
+
+  return (categoryLookup.get(left.categoryId) ?? '').localeCompare(
+    categoryLookup.get(right.categoryId) ?? '',
+    undefined,
+    { sensitivity: 'base' }
+  );
+};
+
 const WebsiteLinkContainer = () => {
   const { accessToken, tokenType, username } = useAuth();
   const { navigateTo } = useAppNavigation();
   const [links, setLinks] = useState<WebsiteLink[]>([]);
   const [categories, setCategories] = useState<WebsiteCategory[]>([]);
   const [categorySearch, setCategorySearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState('all');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [formState, setFormState] = useState(() =>
@@ -81,16 +101,21 @@ const WebsiteLinkContainer = () => {
       );
       const sortedCategories = [...response].sort(compareCategoryNames);
       setCategories(sortedCategories);
-      if (response.length > 0 && editingId === null) {
-        const exists = response.some(
-          (category) => String(category.id) === formState.categoryId
-        );
-        if (!exists) {
-          setFormState((prev) => ({
+      if (sortedCategories.length > 0 && editingId === null) {
+        setFormState((prev) => {
+          const selectedCategoryExists = sortedCategories.some(
+            (category) => String(category.id) === prev.categoryId
+          );
+
+          if (selectedCategoryExists) {
+            return prev;
+          }
+
+          return {
             ...prev,
             categoryId: String(sortedCategories[0].id),
-          }));
-        }
+          };
+        });
       }
     } catch {
       // Ignore category fetch failures; links can still load
@@ -115,15 +140,50 @@ const WebsiteLinkContainer = () => {
   }, [username]);
 
   const filteredLinks = useMemo(() => {
-    if (filterCategoryId === 'all') {
-      return links;
-    }
-    const categoryId = Number(filterCategoryId);
-    if (Number.isNaN(categoryId)) {
-      return links;
-    }
-    return links.filter((link) => link.categoryId === categoryId);
-  }, [filterCategoryId, links]);
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+    const categoryLookup = new Map(
+      categories.map((category) => [category.id, category.categoryName])
+    );
+
+    const filtered = links.filter((link) => {
+      const matchesCategory =
+        filterCategoryId === 'all'
+          ? true
+          : link.categoryId === Number(filterCategoryId);
+
+      if (!matchesCategory) {
+        return false;
+      }
+
+      if (!normalizedSearch) {
+        return true;
+      }
+
+      return (
+        link.websiteLink.toLowerCase().includes(normalizedSearch) ||
+        link.description.toLowerCase().includes(normalizedSearch) ||
+        link.remarks.toLowerCase().includes(normalizedSearch) ||
+        (categoryLookup.get(link.categoryId)?.toLowerCase().includes(normalizedSearch) ??
+          false)
+      );
+    });
+
+    return filtered.sort((left, right) => {
+      switch (sortBy) {
+        case 'oldest':
+          return left.id - right.id;
+        case 'alpha':
+          return left.description.localeCompare(right.description, undefined, {
+            sensitivity: 'base',
+          });
+        case 'category':
+          return compareLinksByCategory(left, right, categories);
+        case 'newest':
+        default:
+          return right.id - left.id;
+      }
+    });
+  }, [categories, filterCategoryId, links, searchQuery, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredLinks.length / pageSize));
   const pagedLinks = useMemo(() => {
@@ -267,6 +327,11 @@ const WebsiteLinkContainer = () => {
     setCategorySearch(value);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
   const filteredCategories = useMemo(() => {
     const normalizedSearch = categorySearch.trim().toLowerCase();
     if (!normalizedSearch) {
@@ -281,6 +346,11 @@ const WebsiteLinkContainer = () => {
   const handlePageChange = (page: number) => {
     const nextPage = Math.min(Math.max(1, page), totalPages);
     setCurrentPage(nextPage);
+  };
+
+  const handleSortChange = (value: SortOption) => {
+    setSortBy(value);
+    setCurrentPage(1);
   };
 
   const handleRefresh = () => {
@@ -298,16 +368,21 @@ const WebsiteLinkContainer = () => {
       formState={formState}
       isEditing={editingId !== null}
       categorySearch={categorySearch}
+      searchQuery={searchQuery}
       filterCategoryId={filterCategoryId}
+      sortBy={sortBy}
       currentPage={currentPage}
       totalPages={totalPages}
+      totalCount={filteredLinks.length}
       onChange={handleChange}
       onSubmit={handleSubmit}
       onEdit={handleEdit}
       onDelete={handleDelete}
       onCancelEdit={handleCancelEdit}
       onCategorySearchChange={handleCategorySearchChange}
+      onSearchChange={handleSearchChange}
       onFilterChange={handleFilterChange}
+      onSortChange={handleSortChange}
       onPageChange={handlePageChange}
       onRefresh={handleRefresh}
     />

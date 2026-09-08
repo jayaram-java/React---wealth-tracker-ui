@@ -3,7 +3,7 @@ import type { AuthState, LoginResponse } from '../types/LoginTypes';
 
 export interface AuthContextValue extends AuthState {
   login: (payload: LoginResponse, username: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshAuth: () => void;
 }
 

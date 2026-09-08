@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '../context/useAuth';
+import { LAST_SCREEN_STORAGE_KEY } from '../context/authStorage';
 import { useAppNavigation } from '../../../context/AppNavigationContext';
-
-const LAST_SCREEN_KEY = 'wealth_tracker_last_screen';
 
 const PersistLastLocation = () => {
   const { isAuthenticated } = useAuth();
@@ -15,7 +14,7 @@ const PersistLastLocation = () => {
     if (typeof window === 'undefined') {
       return;
     }
-    window.sessionStorage.setItem(LAST_SCREEN_KEY, currentScreen);
+    window.sessionStorage.setItem(LAST_SCREEN_STORAGE_KEY, currentScreen);
   }, [currentScreen, isAuthenticated]);
 
   return null;
