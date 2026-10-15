@@ -746,7 +746,7 @@ const ExpenseDetailsPresenter = ({
 
                 <Box sx={{ display: 'flex', gap: 1.5 }}>
                   <Button variant="outlined" fullWidth onClick={onCancelEdit}>Cancel</Button>
-                  <Button type="submit" variant="contained" fullWidth disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Expense'}</Button>
+                  <Button type="submit" variant="contained" fullWidth disabled={isSubmitting}>{isSubmitting ? 'Saving...' : isEditing ? 'Update Expense' : 'Save Expense'}</Button>
                 </Box>
               </Stack>
             </Box>
