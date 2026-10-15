@@ -63,7 +63,7 @@ const ChecklistCategoryContainer = () => {
     try {
       const response = await getRequest<ChecklistCategory[]>(
         API_ENDPOINTS.checklist.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setCategories(response);
     } catch (error) {
@@ -182,7 +182,7 @@ const ChecklistCategoryContainer = () => {
     try {
       const latest = await getRequest<ChecklistCategory>(
         API_ENDPOINTS.checklist.categoryById(category.id),
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setFormState((prev) => ({
         ...prev,

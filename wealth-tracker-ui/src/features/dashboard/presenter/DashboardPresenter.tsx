@@ -1,6 +1,7 @@
 import '../styles/dashboard.css';
 import type { ExpenseReportSummary } from '../types/ExpenseSummaryTypes';
 import type { ExpenseReportTrends } from '../types/ExpenseTrendTypes';
+import { Skeleton } from '@mui/material';
 import ExpenseChart from '../view/ExpenseChart';
 
 interface DashboardPresenterProps {
@@ -104,9 +105,6 @@ const DashboardPresenter = ({
             Your expenses, at a glance. Summary data is pulled from the latest
             report.
           </p>
-          {isLoading && (
-            <p className="dashboard__status">Loading expense summary...</p>
-          )}
           {!isLoading && errorMessage && (
             <p className="dashboard__status dashboard__status--error">
               {errorMessage}
@@ -118,30 +116,57 @@ const DashboardPresenter = ({
       <section className="dashboard__grid">
         <article className="stat-card">
           <h3>Month-to-date spend</h3>
-          <p className="stat-card__value">
-            {formatCurrency(monthSummary?.totalAmount, currency)}
-          </p>
-          <span>{formatCount(monthSummary?.totalCount)}</span>
+          {isLoading && !monthSummary ? (
+            <>
+              <Skeleton variant="text" width="60%" height={36} />
+              <Skeleton variant="text" width="40%" height={20} />
+            </>
+          ) : (
+            <>
+              <p className="stat-card__value">
+                {formatCurrency(monthSummary?.totalAmount, currency)}
+              </p>
+              <span>{formatCount(monthSummary?.totalCount)}</span>
+            </>
+          )}
         </article>
         <article className="stat-card">
           <h3>Today's spend</h3>
-          <p className="stat-card__value">
-            {formatCurrency(todaySummary?.totalAmount, currency)}
-          </p>
-          <span>{formatCount(todaySummary?.totalCount)}</span>
+          {isLoading && !todaySummary ? (
+            <>
+              <Skeleton variant="text" width="60%" height={36} />
+              <Skeleton variant="text" width="40%" height={20} />
+            </>
+          ) : (
+            <>
+              <p className="stat-card__value">
+                {formatCurrency(todaySummary?.totalAmount, currency)}
+              </p>
+              <span>{formatCount(todaySummary?.totalCount)}</span>
+            </>
+          )}
         </article>
         <article className="stat-card">
           <h3>Top category</h3>
-          <p className="stat-card__value">
-            {topCategory?.categoryName ?? '--'}
-          </p>
-          <span>
-            {topCategory
-              ? `${formatCurrency(topCategory.totalAmount, currency)} • ${
-                  topCategory.totalCount
-                } txns`
-              : 'No category data yet'}
-          </span>
+          {isLoading && !overallSummary ? (
+            <>
+              <Skeleton variant="text" width="60%" height={36} />
+              <Skeleton variant="text" width="40%" height={20} />
+            </>
+          ) : (
+            <>
+              <p className="stat-card__value">
+                {topCategory?.categoryName ?? '--'}
+              </p>
+              <span>
+                {topCategory
+                  ? `${formatCurrency(topCategory.totalAmount, currency)} • ${
+                      topCategory.totalCount
+                    } txns`
+                  : 'No category data yet'}
+              </span>
+            </>
+          )}
         </article>
       </section>
 

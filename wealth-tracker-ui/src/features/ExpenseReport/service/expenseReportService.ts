@@ -36,6 +36,7 @@ export const fetchExpenseReportDetails = async ({
 
   return getRequest<ExpenseReportItem[]>(url.toString(), {
     headers: authHeader,
+    skipLoader: true,
   });
 };
 

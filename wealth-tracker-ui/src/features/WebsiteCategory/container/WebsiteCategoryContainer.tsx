@@ -48,7 +48,7 @@ const WebsiteCategoryContainer = () => {
     try {
       const response = await getRequest<WebsiteCategory[]>(
         API_ENDPOINTS.website.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setCategories(response);
     } catch (error) {
@@ -147,7 +147,7 @@ const WebsiteCategoryContainer = () => {
     try {
       const latest = await getRequest<WebsiteCategory>(
         API_ENDPOINTS.website.categoryById(category.id),
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setFormState((prev) => ({
         ...prev,

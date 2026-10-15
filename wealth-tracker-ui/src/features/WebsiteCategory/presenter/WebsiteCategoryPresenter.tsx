@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import type { WebsiteCategory } from '../types/WebsiteCategoryTypes';
+import { Skeleton } from '@mui/material';
 import '../styles/WebsiteCategory.css';
 
 interface WebsiteCategoryPresenterProps {
@@ -128,7 +129,6 @@ const WebsiteCategoryPresenter = ({
               <h2>Saved Categories</h2>
               <p>View and manage your website categories.</p>
             </div>
-            {isLoading ? <span>Loading...</span> : null}
           </div>
           <div className="website-category__table">
             <div className="website-category__row website-category__row--head">
@@ -137,7 +137,16 @@ const WebsiteCategoryPresenter = ({
               <span>Active</span>
               <span>Actions</span>
             </div>
-            {categories.length === 0 ? (
+            {isLoading && categories.length === 0 ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div key={`web-cat-skeleton-${idx}`} className="website-category__row">
+                  <span><Skeleton variant="text" width="70%" /></span>
+                  <span><Skeleton variant="text" width="90%" /></span>
+                  <span><Skeleton variant="text" width={40} /></span>
+                  <span className="website-category__row-actions"><Skeleton variant="text" width={40} /></span>
+                </div>
+              ))
+            ) : categories.length === 0 ? (
               <div className="website-category__empty">
                 No categories found. Create one to get started.
               </div>

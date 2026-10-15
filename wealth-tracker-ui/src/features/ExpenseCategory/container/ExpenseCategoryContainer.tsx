@@ -59,7 +59,7 @@ const ExpenseCategoryContainer = () => {
     try {
       const response = await getRequest<ExpenseCategory[]>(
         API_ENDPOINTS.expense.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setCategories(response);
     } catch (error) {
@@ -169,7 +169,7 @@ const ExpenseCategoryContainer = () => {
     try {
       const latest = await getRequest<ExpenseCategory>(
         API_ENDPOINTS.expense.categoryById(category.id),
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setFormState((prev) => ({
         ...prev,

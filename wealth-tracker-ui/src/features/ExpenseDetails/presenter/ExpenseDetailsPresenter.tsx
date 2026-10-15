@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
 import type { ExpenseCategory } from '../../ExpenseCategory/types/ExpenseCategoryTypes';
 import type { ExpenseDetails, ExpenseStatus, ExpenseReceipt } from '../types/ExpenseDetailsTypes';
+import { getTodayLocalDateString } from '../utils/expenseDateValidation';
 import {
   Alert,
   Box,
@@ -37,6 +38,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Divider,
+  Skeleton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
@@ -230,7 +232,7 @@ const ExpenseDetailsPresenter = ({
           </CardContent>
         </Card>
 
-        {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
+        {!drawerOpen && errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' }, gap: 2.5 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
@@ -419,7 +421,20 @@ const ExpenseDetailsPresenter = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {expenseDetails.length === 0 ? (
+                      {isLoading && expenseDetails.length === 0 ? (
+                        Array.from({ length: 5 }).map((_, idx) => (
+                          <TableRow key={`expense-skeleton-${idx}`}>
+                            <TableCell><Skeleton variant="text" width="70%" /><Skeleton variant="text" width="40%" height={14} /></TableCell>
+                            <TableCell><Skeleton variant="text" width={80} /></TableCell>
+                            <TableCell><Skeleton variant="text" width={100} /></TableCell>
+                            <TableCell><Skeleton variant="text" width={70} /></TableCell>
+                            <TableCell><Skeleton variant="text" width={90} /></TableCell>
+                            <TableCell><Skeleton variant="text" width={110} /></TableCell>
+                            <TableCell><Skeleton variant="text" width={60} /></TableCell>
+                            <TableCell align="right"><Skeleton variant="circular" width={28} height={28} sx={{ display: 'inline-block' }} /></TableCell>
+                          </TableRow>
+                        ))
+                      ) : expenseDetails.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
@@ -573,12 +588,6 @@ const ExpenseDetailsPresenter = ({
                     labelRowsPerPage="Rows"
                   />
                 </Box>
-
-                {isLoading ? (
-                  <Typography variant="body2" color="text.secondary">
-                    Loading...
-                  </Typography>
-                ) : null}
               </Stack>
             </CardContent>
           </Card>
@@ -598,7 +607,12 @@ const ExpenseDetailsPresenter = ({
             <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
               {isEditing ? 'Update Expense' : 'Create Expense'}
             </Typography>
-            <Box component="form" onSubmit={onSubmit}>
+            {errorMessage ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {errorMessage}
+              </Alert>
+            ) : null}
+            <Box component="form" onSubmit={onSubmit} noValidate>
               {/* reuse the existing business form without changing the payload logic */}
               <Stack spacing={2}>
                 <TextField label="Expense Name" value={formState.expenseName} onChange={(e) => onChange('expenseName', e.target.value)} fullWidth disabled={isEditing} />
@@ -615,7 +629,19 @@ const ExpenseDetailsPresenter = ({
                   <MenuItem value="Debit card">Debit card</MenuItem>
                   <MenuItem value="Net banking">Net banking</MenuItem>
                 </TextField>
-                <TextField label="Date" type="date" value={formState.expenseDate} onChange={(e) => onChange('expenseDate', e.target.value)} fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+                <TextField
+                  label="Date"
+                  type="date"
+                  value={formState.expenseDate}
+                  onChange={(e) => onChange('expenseDate', e.target.value)}
+                  fullWidth
+                  slotProps={{
+                    inputLabel: { shrink: true },
+                    htmlInput: {
+                      max: getTodayLocalDateString(),
+                    },
+                  }}
+                />
                 <TextField label="Receipt" value={formState.receiptUrl} onChange={(e) => onChange('receiptUrl', e.target.value)} fullWidth />
                 <TextField label="Description" value={formState.description} onChange={(e) => onChange('description', e.target.value)} fullWidth multiline minRows={3} />
                 

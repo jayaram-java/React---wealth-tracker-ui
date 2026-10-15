@@ -5,6 +5,7 @@ import type {
   ExpenseReportSortField,
   ExpenseReportSortOrder,
 } from '../types/ExpenseReportTypes';
+import { Skeleton } from '@mui/material';
 import '../styles/ExpenseReport.css';
 
 interface ExpenseReportPresenterProps {
@@ -213,7 +214,6 @@ const ExpenseReportPresenter = ({
       <section className="expense-report__card expense-report__table-card">
         <div className="expense-report__table-header">
           <h2>Expense Details</h2>
-          {isLoading ? <span>Loading...</span> : null}
         </div>
 
         <div className="expense-report__table-actions">
@@ -242,7 +242,17 @@ const ExpenseReportPresenter = ({
             <span>Payment Method</span>
           </div>
 
-          {reportRows.length === 0 && !isLoading ? (
+          {isLoading && reportRows.length === 0 ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div key={`report-skeleton-${idx}`} className="expense-report__row">
+                <span><Skeleton variant="text" width="80%" /></span>
+                <span><Skeleton variant="text" width="60%" /></span>
+                <span><Skeleton variant="text" width="50%" /></span>
+                <span><Skeleton variant="text" width="70%" /></span>
+                <span><Skeleton variant="text" width="50%" /></span>
+              </div>
+            ))
+          ) : reportRows.length === 0 ? (
             <div className="expense-report__empty">
               No expenses found for the selected filters.
             </div>

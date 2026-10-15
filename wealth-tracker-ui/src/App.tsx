@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -10,26 +10,29 @@ import {
   type Location,
 } from 'react-router-dom';
 import './App.css';
-import LoginContainer from './features/login/container/LoginContainer';
-import RegisterContainer from './features/Register/RegisterContainer';
-import DashboardContainer from './features/dashboard/container/DashboardContainer';
 import { AuthProvider } from './features/login/context/AuthProvider';
-import ExpenseCategoryContainer from './features/ExpenseCategory/container/ExpenseCategoryContainer';
-import ExpenseDetailsContainer from './features/ExpenseDetails/container/ExpenseDetailsContainer';
-import WebsiteCategoryContainer from './features/WebsiteCategory/container/WebsiteCategoryContainer';
-import WebsiteLinkContainer from './features/WebsiteLink/container/WebsiteLinkContainer';
-import ChecklistCategoryContainer from './features/ChecklistCategory/container/ChecklistCategoryContainer';
-import ChecklistContainer from './features/Checklist/container/ChecklistContainer';
 import FloatingChatbotContainer from './features/chatbot/container/FloatingChatbotContainer';
-import ExpenseReportContainer from './features/ExpenseReport/container/ExpenseReportContainer';
-import ServiceHealthDashboardContainer from './features/ServiceHealthDashboard/container/ServiceHealthDashboardContainer';
-import MetricsContainer from './features/Metrics/container/MetricsContainer';
 import Header from './components/Header';
 import { AppNavigationContext, getScreenFromLocation, buildNavigateTo } from './context/AppNavigationContext';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { ROUTES } from './routes/routePaths';
 import { useAuth } from './features/login/context/useAuth';
 import ApiLoader from './components/common/ApiLoader';
+import PageSkeleton from './components/common/PageSkeleton';
+
+// Route-level lazy loading for all 12 screens
+const LoginContainer = lazy(() => import('./features/login/container/LoginContainer'));
+const RegisterContainer = lazy(() => import('./features/Register/RegisterContainer'));
+const DashboardContainer = lazy(() => import('./features/dashboard/container/DashboardContainer'));
+const ExpenseDetailsContainer = lazy(() => import('./features/ExpenseDetails/container/ExpenseDetailsContainer'));
+const ExpenseCategoryContainer = lazy(() => import('./features/ExpenseCategory/container/ExpenseCategoryContainer'));
+const ChecklistCategoryContainer = lazy(() => import('./features/ChecklistCategory/container/ChecklistCategoryContainer'));
+const ChecklistContainer = lazy(() => import('./features/Checklist/container/ChecklistContainer'));
+const WebsiteCategoryContainer = lazy(() => import('./features/WebsiteCategory/container/WebsiteCategoryContainer'));
+const WebsiteLinkContainer = lazy(() => import('./features/WebsiteLink/container/WebsiteLinkContainer'));
+const ExpenseReportContainer = lazy(() => import('./features/ExpenseReport/container/ExpenseReportContainer'));
+const ServiceHealthDashboardContainer = lazy(() => import('./features/ServiceHealthDashboard/container/ServiceHealthDashboardContainer'));
+const MetricsContainer = lazy(() => import('./features/Metrics/container/MetricsContainer'));
 
 const AppLayout = () => {
   const location = useLocation();
@@ -47,7 +50,9 @@ const AppLayout = () => {
       value={{ currentScreen, navigateTo: buildNavigateTo(navigate) }}
     >
       <Header onLogout={handleLogout} />
-      <Outlet />
+      <Suspense fallback={<PageSkeleton />}>
+        <Outlet />
+      </Suspense>
       <FloatingChatbotContainer />
     </AppNavigationContext.Provider>
   );
@@ -62,7 +67,11 @@ const LoginRoute = () => {
     return <Navigate to={from ?? ROUTES.dashboard} replace />;
   }
 
-  return <LoginContainer />;
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <LoginContainer />
+    </Suspense>
+  );
 };
 
 const RegisterRoute = () => {
@@ -72,7 +81,11 @@ const RegisterRoute = () => {
     return <Navigate to={ROUTES.dashboard} replace />;
   }
 
-  return <RegisterContainer />;
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <RegisterContainer />
+    </Suspense>
+  );
 };
 
 function App() {

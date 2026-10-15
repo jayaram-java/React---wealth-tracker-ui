@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useAuth } from '../../login/context/useAuth';
 import { useAppNavigation } from '../../../context/AppNavigationContext';
-import ChatbotContainer from './ChatbotContainer';
+
+const ChatbotContainer = lazy(() => import('./ChatbotContainer'));
 
 const FloatingChatbotContainer = () => {
   const { isAuthenticated } = useAuth();
@@ -16,7 +17,11 @@ const FloatingChatbotContainer = () => {
     setIsOpen((prev) => !prev);
   };
 
-  return <ChatbotContainer isOpen={isOpen} onToggle={handleToggle} />;
+  return (
+    <Suspense fallback={null}>
+      <ChatbotContainer isOpen={isOpen} onToggle={handleToggle} />
+    </Suspense>
+  );
 };
 
 export default FloatingChatbotContainer;

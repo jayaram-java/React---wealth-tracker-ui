@@ -81,7 +81,7 @@ const WebsiteLinkContainer = () => {
     try {
       const response = await getRequest<WebsiteLink[]>(
         API_ENDPOINTS.website.links,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setLinks(response);
     } catch (error) {
@@ -97,7 +97,7 @@ const WebsiteLinkContainer = () => {
     try {
       const response = await getRequest<WebsiteCategory[]>(
         API_ENDPOINTS.website.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       const sortedCategories = [...response].sort(compareCategoryNames);
       setCategories(sortedCategories);
@@ -274,7 +274,7 @@ const WebsiteLinkContainer = () => {
     try {
       const latest = await getRequest<WebsiteLink>(
         API_ENDPOINTS.website.linkById(link.id),
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setFormState((prev) => ({
         ...prev,

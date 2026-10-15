@@ -1,4 +1,4 @@
-export type ExpenseStatus = 'ACTIVE' | 'INACTIVE';
+﻿export type ExpenseStatus = 'ACTIVE' | 'INACTIVE';
 
 export interface ExpenseReceipt {
   id: number;
@@ -46,8 +46,16 @@ export interface ExpenseDetailsCreatePayload {
 }
 
 export interface ExpenseDetailsUpdatePayload {
+  expenseName: string;
+  expenseDate: string;
   amount: number;
   description: string;
   paymentMethod: string;
+  expenseCode: string;
+  referenceNumber: string;
+  receiptUrl: string;
+  currency: string;
+  status: ExpenseStatus;
+  categoryId: number;
   modifiedBy: string;
 }

@@ -35,6 +35,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Skeleton,
 } from '@mui/material';
 import type { WebsiteLink } from '../types/WebsiteLinkTypes';
 import type { WebsiteCategory } from '../../WebsiteCategory/types/WebsiteCategoryTypes';
@@ -460,7 +461,16 @@ const WebsiteLinkPresenter = ({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {links.length === 0 ? (
+                    {isLoading && links.length === 0 ? (
+                      Array.from({ length: 5 }).map((_, idx) => (
+                        <TableRow key={`link-skeleton-${idx}`}>
+                          <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                          <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                          <TableCell><Skeleton variant="text" width={100} /></TableCell>
+                          <TableCell align="right"><Skeleton variant="circular" width={28} height={28} sx={{ display: 'inline-block' }} /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : links.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>

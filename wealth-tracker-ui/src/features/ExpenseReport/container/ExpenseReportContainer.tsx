@@ -109,7 +109,7 @@ const ExpenseReportContainer = () => {
     try {
       const response = await getRequest<ExpenseCategory[]>(
         API_ENDPOINTS.expense.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setCategories(response);
     } catch {

@@ -68,7 +68,7 @@ const ChecklistContainer = () => {
     try {
       const response = await getRequest<ChecklistItem[]>(
         API_ENDPOINTS.checklist.items,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setItems(response);
     } catch (error) {
@@ -84,7 +84,7 @@ const ChecklistContainer = () => {
     try {
       const response = await getRequest<ChecklistCategory[]>(
         API_ENDPOINTS.checklist.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setCategories(response);
       if (response.length > 0 && editingId === null) {
@@ -219,7 +219,7 @@ const ChecklistContainer = () => {
     try {
       const latest = await getRequest<ChecklistItem>(
         API_ENDPOINTS.checklist.itemById(item.id),
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setFormState((prev) => ({
         ...prev,

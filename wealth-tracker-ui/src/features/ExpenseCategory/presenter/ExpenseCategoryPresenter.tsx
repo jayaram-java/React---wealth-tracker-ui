@@ -3,6 +3,7 @@ import type {
   ExpenseCategory,
   ExpenseCategoryStatus,
 } from '../types/ExpenseCategoryTypes';
+import { Skeleton } from '@mui/material';
 import '../styles/ExpenseCategory.css';
 
 interface ExpenseCategoryPresenterProps {
@@ -153,7 +154,6 @@ const ExpenseCategoryPresenter = ({
               <h2>Saved Categories</h2>
               <p>Manage existing categories and keep them up to date.</p>
             </div>
-            {isLoading ? <span>Loading...</span> : null}
           </div>
           <div className="expense-category__table">
             <div className="expense-category__row expense-category__row--head">
@@ -163,7 +163,17 @@ const ExpenseCategoryPresenter = ({
               <span>Created By</span>
               <span>Actions</span>
             </div>
-            {categories.length === 0 ? (
+            {isLoading && categories.length === 0 ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div key={`exp-cat-skeleton-${idx}`} className="expense-category__row">
+                  <span><Skeleton variant="text" width="70%" /></span>
+                  <span><Skeleton variant="text" width="90%" /></span>
+                  <span><Skeleton variant="text" width={50} /></span>
+                  <span><Skeleton variant="text" width={60} /></span>
+                  <span className="expense-category__row-actions"><Skeleton variant="text" width={40} /></span>
+                </div>
+              ))
+            ) : categories.length === 0 ? (
               <div className="expense-category__empty">
                 No categories found. Create one to get started.
               </div>

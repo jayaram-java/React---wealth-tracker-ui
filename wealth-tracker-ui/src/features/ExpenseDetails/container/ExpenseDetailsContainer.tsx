@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+﻿import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   deleteRequest,
   getRequest,
@@ -20,6 +20,7 @@ import type {
 } from '../types/ExpenseDetailsTypes';
 import { decodeJwtPayload } from '../../../utils/jwt';
 import { useAppNavigation } from '../../../context/AppNavigationContext';
+import { getTodayLocalDateString, validateExpenseDate } from '../utils/expenseDateValidation';
 
 interface JwtPayload {
   userId?: number;
@@ -30,7 +31,7 @@ type QuickFilter = 'all' | 'category' | 'payment';
 
 const buildDefaultFormState = (username: string, userId: number | null) => ({
   expenseName: '',
-  expenseDate: new Date().toISOString().slice(0, 10),
+  expenseDate: getTodayLocalDateString(),
   amount: '',
   description: '',
   paymentMethod: 'UPI',
@@ -86,13 +87,13 @@ const ExpenseDetailsContainer = () => {
     return typeof payload?.userId === 'number' ? payload.userId : null;
   }, [accessToken]);
 
-  const fetchExpenseDetails = async () => {
+  const fetchExpenseDetails = async (options?: { skipLoader?: boolean }) => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
       const response = await getRequest<ExpenseDetails[]>(
         API_ENDPOINTS.expense.details,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: options?.skipLoader ?? true }
       );
       setExpenseDetails(response);
     } catch (error) {
@@ -108,7 +109,7 @@ const ExpenseDetailsContainer = () => {
     try {
       const response = await getRequest<ExpenseCategory[]>(
         API_ENDPOINTS.expense.categories,
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setCategories(response);
       if (response.length > 0) {
@@ -141,7 +142,11 @@ const ExpenseDetailsContainer = () => {
   };
 
   const resetForm = () => {
-    setFormState(buildDefaultFormState(username, userId));
+    const defaultState = buildDefaultFormState(username, userId);
+    if (categories.length > 0) {
+      defaultState.categoryId = String(categories[0].id);
+    }
+    setFormState(defaultState);
     setEditingId(null);
     setSelectedFiles([]);
     setExistingReceipts([]);
@@ -178,9 +183,17 @@ const ExpenseDetailsContainer = () => {
       }
       if (editingId !== null) {
         const payload: ExpenseDetailsUpdatePayload = {
+          expenseName: formState.expenseName.trim(),
+          expenseDate: formState.expenseDate,
           amount: Number(formState.amount),
           description: formState.description.trim(),
           paymentMethod: formState.paymentMethod.trim(),
+          expenseCode: formState.expenseCode.trim(),
+          referenceNumber: formState.referenceNumber.trim(),
+          receiptUrl: formState.receiptUrl.trim(),
+          currency: formState.currency.trim(),
+          status: formState.status,
+          categoryId: Number(formState.categoryId),
           modifiedBy: username || 'web',
         };
         await putRequest<ExpenseDetails, ExpenseDetailsUpdatePayload>(
@@ -190,6 +203,12 @@ const ExpenseDetailsContainer = () => {
         );
         setSuccessMessage('Expense updated successfully.');
       } else {
+        const dateError = validateExpenseDate(formState.expenseDate);
+        if (dateError) {
+          setErrorMessage(dateError);
+          return;
+        }
+
         const payload: ExpenseDetailsCreatePayload = {
           expenseName: formState.expenseName.trim(),
           expenseDate: formState.expenseDate,
@@ -230,7 +249,7 @@ const ExpenseDetailsContainer = () => {
         setSuccessMessage('Expense created successfully.');
       }
       resetForm();
-      await fetchExpenseDetails();
+      await fetchExpenseDetails({ skipLoader: true });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to save expense details.';
@@ -265,13 +284,21 @@ const ExpenseDetailsContainer = () => {
     try {
       const latest = await getRequest<ExpenseDetails>(
         API_ENDPOINTS.expense.detailById(detail.id),
-        { headers: authHeader }
+        { headers: authHeader, skipLoader: true }
       );
       setFormState((prev) => ({
         ...prev,
+        expenseName: latest.expenseName,
+        expenseDate: latest.expenseDate,
         amount: String(latest.amount),
         description: latest.description,
         paymentMethod: latest.paymentMethod,
+        expenseCode: latest.expenseCode,
+        referenceNumber: latest.referenceNumber,
+        receiptUrl: latest.receiptUrl,
+        currency: latest.currency,
+        status: latest.status,
+        categoryId: String(latest.categoryId),
         modifiedBy: latest.modifiedBy ?? prev.modifiedBy,
       }));
     } catch {
@@ -295,7 +322,7 @@ const ExpenseDetailsContainer = () => {
         headers: authHeader,
       });
       setSuccessMessage('Expense deleted successfully.');
-      await fetchExpenseDetails();
+      await fetchExpenseDetails({ skipLoader: true });
       if (editingId === deleteTarget.id) {
         resetForm();
       }

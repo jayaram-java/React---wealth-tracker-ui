@@ -85,14 +85,15 @@ const DashboardContainer = () => {
       const [overall, month, todaySummary] = await Promise.all([
         getRequest<ExpenseReportSummary>(buildSummaryUrl(), {
           headers: authHeader,
+          skipLoader: true,
         }),
         getRequest<ExpenseReportSummary>(
           buildSummaryUrl({ startDate: monthStartIso, endDate: todayIso }),
-          { headers: authHeader }
+          { headers: authHeader, skipLoader: true }
         ),
         getRequest<ExpenseReportSummary>(
           buildSummaryUrl({ startDate: todayIso, endDate: todayIso }),
-          { headers: authHeader }
+          { headers: authHeader, skipLoader: true }
         ),
       ]);
 
@@ -116,6 +117,7 @@ const DashboardContainer = () => {
     try {
       const trendData = await getRequest<ExpenseReportTrends>(buildTrendsUrl(), {
         headers: authHeader,
+        skipLoader: true,
       });
       setTrends(trendData);
     } catch (error) {

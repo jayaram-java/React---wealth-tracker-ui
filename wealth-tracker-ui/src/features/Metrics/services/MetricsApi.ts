@@ -39,7 +39,7 @@ export interface MetricsRequestOptions {
 export const MetricsApi = {
   async health(service: ServiceKey, options?: MetricsRequestOptions | Record<string, string>) {
     const cfg = serviceConfig(service);
-    const opts = options && 'headers' in options ? options : { headers: options as Record<string, string> | undefined };
+    const opts = options && 'headers' in options ? { skipLoader: true, ...options } : { headers: options as Record<string, string> | undefined, skipLoader: true };
     return getRequest<ActuatorHealthResponse>(cfg.health, opts);
   },
 
@@ -48,7 +48,7 @@ export const MetricsApi = {
     if (!cfg.info) {
       return {} as ActuatorInfoResponse;
     }
-    const opts = options && 'headers' in options ? options : { headers: options as Record<string, string> | undefined };
+    const opts = options && 'headers' in options ? { skipLoader: true, ...options } : { headers: options as Record<string, string> | undefined, skipLoader: true };
     return getRequest<ActuatorInfoResponse>(cfg.info, opts);
   },
 
@@ -57,14 +57,14 @@ export const MetricsApi = {
     if (!cfg.metricsIndex) {
       return { names: [] } as ActuatorMetricsIndexResponse;
     }
-    const opts = options && 'headers' in options ? options : { headers: options as Record<string, string> | undefined };
+    const opts = options && 'headers' in options ? { skipLoader: true, ...options } : { headers: options as Record<string, string> | undefined, skipLoader: true };
     return getRequest<ActuatorMetricsIndexResponse>(cfg.metricsIndex, opts);
   },
 
   async metric(service: ServiceKey, metricName: string, options?: MetricsRequestOptions | Record<string, string>) {
     const cfg = serviceConfig(service);
     const url = `${cfg.baseUrl}/actuator/metrics/${encodeURIComponent(metricName)}`;
-    const opts = options && 'headers' in options ? options : { headers: options as Record<string, string> | undefined };
+    const opts = options && 'headers' in options ? { skipLoader: true, ...options } : { headers: options as Record<string, string> | undefined, skipLoader: true };
     return getRequest<ActuatorMetricResponse>(url, opts);
   },
 

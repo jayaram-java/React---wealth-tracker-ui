@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
 import type { ChecklistItem, ChecklistStatus } from '../types/ChecklistTypes';
 import type { ChecklistCategory } from '../../ChecklistCategory/types/ChecklistCategoryTypes';
+import { Skeleton } from '@mui/material';
 import '../styles/Checklist.css';
 
 interface ChecklistFormState {
@@ -201,7 +202,6 @@ const ChecklistPresenter = ({
               <h2>Saved Checklist Items</h2>
               <p>Review checklist items and keep them updated.</p>
             </div>
-            {isLoading ? <span>Loading...</span> : null}
           </div>
           <div className="checklist__table" data-testid="checklist-table">
             <div className="checklist__row checklist__row--head">
@@ -211,7 +211,17 @@ const ChecklistPresenter = ({
               <span>Category</span>
               <span>Actions</span>
             </div>
-            {items.length === 0 ? (
+            {isLoading && items.length === 0 ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div key={`checklist-skeleton-${idx}`} className="checklist__row">
+                  <span><Skeleton variant="text" width="80%" /></span>
+                  <span><Skeleton variant="text" width="90%" /></span>
+                  <span><Skeleton variant="rounded" width={70} height={24} /></span>
+                  <span><Skeleton variant="text" width="60%" /></span>
+                  <span className="checklist__row-actions"><Skeleton variant="text" width={40} /></span>
+                </div>
+              ))
+            ) : items.length === 0 ? (
               <div className="checklist__empty">
                 No checklist items found. Create one to get started.
               </div>

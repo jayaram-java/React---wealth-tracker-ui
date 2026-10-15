@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import type { ChecklistCategory } from '../types/ChecklistCategoryTypes';
+import { Skeleton } from '@mui/material';
 import '../styles/ChecklistCategory.css';
 
 interface ChecklistCategoryFormState {
@@ -152,7 +153,6 @@ const ChecklistCategoryPresenter = ({
               <h2>Saved Categories</h2>
               <p>Review checklist categories and keep them current.</p>
             </div>
-            {isLoading ? <span>Loading...</span> : null}
           </div>
           <div className="checklist-category__table">
             <div className="checklist-category__row checklist-category__row--head">
@@ -161,7 +161,16 @@ const ChecklistCategoryPresenter = ({
               <span>Primary</span>
               <span>Actions</span>
             </div>
-            {categories.length === 0 ? (
+            {isLoading && categories.length === 0 ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div key={`chk-cat-skeleton-${idx}`} className="checklist-category__row">
+                  <span><Skeleton variant="text" width="70%" /></span>
+                  <span><Skeleton variant="text" width="90%" /></span>
+                  <span><Skeleton variant="text" width={40} /></span>
+                  <span className="checklist-category__row-actions"><Skeleton variant="text" width={40} /></span>
+                </div>
+              ))
+            ) : categories.length === 0 ? (
               <div className="checklist-category__empty">
                 No checklist categories found. Create one to get started.
               </div>
