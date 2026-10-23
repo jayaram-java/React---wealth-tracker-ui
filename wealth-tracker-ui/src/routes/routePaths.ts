@@ -1,4 +1,4 @@
-import type { AppScreen } from '../context/AppNavigationContext';
+﻿import type { AppScreen } from '../context/AppNavigationContext';
 
 export const ROUTES = {
   login: '/login',
@@ -13,6 +13,7 @@ export const ROUTES = {
   expenseReports: '/expense-reports',
   serviceHealth: '/service-health',
   metrics: '/metrics',
+  myTasks: '/my-tasks',
 } as const;
 
 export const screenToPath: Record<AppScreen, string> = {
@@ -28,6 +29,7 @@ export const screenToPath: Record<AppScreen, string> = {
   'expense-reports': ROUTES.expenseReports,
   'service-health': ROUTES.serviceHealth,
   metrics: ROUTES.metrics,
+  'my-tasks': ROUTES.myTasks,
 };
 
 export const pathToScreen = (path: string): AppScreen => {

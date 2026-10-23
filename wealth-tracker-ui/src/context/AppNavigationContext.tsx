@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+﻿import { createContext, useContext } from 'react';
 import type { NavigateFunction, Location } from 'react-router-dom';
 import { screenToPath } from '../routes/routePaths';
 
@@ -14,7 +14,8 @@ export type AppScreen =
   | 'website-links'
   | 'expense-reports'
   | 'service-health'
-  | 'metrics';
+  | 'metrics'
+  | 'my-tasks';
 
 interface AppNavigationContextValue {
   currentScreen: AppScreen;

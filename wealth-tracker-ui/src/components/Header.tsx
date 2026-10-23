@@ -1,4 +1,4 @@
-import './Header.css';
+﻿import './Header.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BriefcaseBusiness,
@@ -10,6 +10,7 @@ import {
   Menu,
   Receipt,
   Settings,
+  ListTodo,
   UserCircle2,
 } from 'lucide-react';
 import { useAuth } from '../features/login/context/useAuth';
@@ -46,6 +47,7 @@ const Header = ({ onLogout }: HeaderProps) => {
   const showWebsiteLinks = isAdmin || isUser;
   const showExpenseReport = isAdmin || isUser;
   const showServiceHealth = isAdmin;
+  const showMyTasks = isAdmin || isUser;
   const showMetrics = isAdmin;
   const isActive = (screen: typeof currentScreen) => currentScreen === screen;
 
@@ -116,7 +118,7 @@ const Header = ({ onLogout }: HeaderProps) => {
 
         <button type="button" className="app-header__brand" onClick={() => handleNavigate('dashboard')}>
           <span className="app-header__brand-mark" aria-hidden="true">
-            💰
+            ðŸ’°
           </span>
           <span className="app-header__brand-text">Wealth Tracker</span>
         </button>
@@ -272,6 +274,16 @@ const Header = ({ onLogout }: HeaderProps) => {
             >
               Service Health
             </button>
+          ) : null}          {showMyTasks ? (
+            <button
+              type="button"
+              onClick={() => handleNavigate('my-tasks')}
+              className={`app-header__link${isActive('my-tasks') ? ' active' : ''}`}
+              data-testid="nav-my-tasks"
+            >
+              <ListTodo className="app-header__icon" aria-hidden="true" />
+              My Tasks
+            </button>
           ) : null}
           {showMetrics ? (
             <button
@@ -332,7 +344,7 @@ const Header = ({ onLogout }: HeaderProps) => {
         <div className="app-header__drawer" role="dialog" aria-label="Navigation drawer">
           <div className="app-header__drawer-panel">
             <button type="button" className="app-header__drawer-close" onClick={closeAll} aria-label="Close navigation menu">
-              ×
+              Ã—
             </button>
             <div className="app-header__drawer-section">
               <span className="app-header__menu-title">Navigate</span>
@@ -381,3 +393,5 @@ const Header = ({ onLogout }: HeaderProps) => {
 };
 
 export default Header;
+
+

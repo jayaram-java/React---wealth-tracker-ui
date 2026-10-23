@@ -1,9 +1,12 @@
-const AUTH_BASE_URL =
+﻿const AUTH_BASE_URL =
   import.meta.env.VITE_AUTH_BASE_URL ?? 'http://localhost:8080';
 const EXPENSE_BASE_URL =
   import.meta.env.VITE_EXPENSE_BASE_URL ?? 'http://localhost:8080';
 const REPORT_AUTOMATION_BASE_URL =
   import.meta.env.VITE_REPORT_AUTOMATION_BASE_URL ?? 'http://localhost:8080';
+// SpendWise EmployeeTask service (direct, bypasses API gateway)
+const TASK_BASE_URL =
+  import.meta.env.VITE_TASK_BASE_URL ?? 'http://localhost:8080';
 
 export const API_ENDPOINTS = {
   auth: {
@@ -78,5 +81,13 @@ export const API_ENDPOINTS = {
     items: `${EXPENSE_BASE_URL}/expenseservice/api/v1/checklists`,
     itemById: (id: number) =>
       `${EXPENSE_BASE_URL}/expenseservice/api/v1/checklists/${id}`,
+  },
+  tasks: {
+    base: `${TASK_BASE_URL}/expenseservice/api/tasks`,
+    byId: (id: number) => `${TASK_BASE_URL}/expenseservice/api/tasks/${id}`,
+    byEmployee: (employeeId: number) =>
+      `${TASK_BASE_URL}/expenseservice/api/tasks/assigned/${employeeId}`,
+    byStatus: (status: string) =>
+      `${TASK_BASE_URL}/expenseservice/api/tasks/status/${status}`,
   },
 };

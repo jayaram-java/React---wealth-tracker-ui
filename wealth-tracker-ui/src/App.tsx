@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo } from 'react';
+﻿import { lazy, Suspense, useMemo } from 'react';
 import {
   BrowserRouter,
   Navigate,
@@ -20,7 +20,7 @@ import { useAuth } from './features/login/context/useAuth';
 import ApiLoader from './components/common/ApiLoader';
 import PageSkeleton from './components/common/PageSkeleton';
 
-// Route-level lazy loading for all 12 screens
+// Route-level lazy loading for all screens
 const LoginContainer = lazy(() => import('./features/login/container/LoginContainer'));
 const RegisterContainer = lazy(() => import('./features/Register/RegisterContainer'));
 const DashboardContainer = lazy(() => import('./features/dashboard/container/DashboardContainer'));
@@ -33,6 +33,7 @@ const WebsiteLinkContainer = lazy(() => import('./features/WebsiteLink/container
 const ExpenseReportContainer = lazy(() => import('./features/ExpenseReport/container/ExpenseReportContainer'));
 const ServiceHealthDashboardContainer = lazy(() => import('./features/ServiceHealthDashboard/container/ServiceHealthDashboardContainer'));
 const MetricsContainer = lazy(() => import('./features/Metrics/container/MetricsContainer'));
+const MyTasksContainer = lazy(() => import('./features/MyTasks/container/MyTasksContainer'));
 
 const AppLayout = () => {
   const location = useLocation();
@@ -126,6 +127,7 @@ function App() {
                 element={<ServiceHealthDashboardContainer />}
               />
               <Route path={ROUTES.metrics} element={<MetricsContainer />} />
+              <Route path={ROUTES.myTasks} element={<MyTasksContainer />} />
             </Route>
           </Route>
           <Route element={<Navigate to={ROUTES.dashboard} replace />} path="/" />
